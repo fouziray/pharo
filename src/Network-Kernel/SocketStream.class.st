@@ -77,20 +77,6 @@ Class {
 	#tag : 'Base'
 }
 
-{ #category : 'examples' }
-SocketStream class >> finger: userName [
-	"SocketStream finger: 'stp'"
-
-	| addr s |
-	addr := NetNameResolver promptUserForHostAddress.
-	s := SocketStream openConnectionToHost: addr port: 79.	"finger port number"
-	self traceCr: '---------- Connecting ----------'.
-	s sendCommand: userName.
-	self trace: s nextLineCrLf.
-	s close.
-	self traceCr: '---------- Connection Closed ----------'
-]
-
 { #category : 'instance creation' }
 SocketStream class >> on: socket [
 	"Create a socket stream on a connected server socket."
@@ -937,7 +923,7 @@ SocketStream >> upTo: aCharacterOrByte limit: nBytes [
 		].
 
 		"Check if we've exceeded the max. amount"
-		(nBytes notNil and:[inNextToWrite - lastRead > nBytes])
+		(nBytes isNotNil and:[inNextToWrite - lastRead > nBytes])
 			ifTrue:[^self nextAllInBuffer].
 	].
 
@@ -990,7 +976,7 @@ SocketStream >> upToAll: aStringOrByteArray limit: nBytes [
 			^ result
 		].
 		"Check if we've exceeded the max. amount"
-		(nBytes notNil and:[inNextToWrite - lastRead > nBytes])
+		(nBytes isNotNil and:[inNextToWrite - lastRead > nBytes])
 			ifTrue:[^self nextAllInBuffer].
 	].
 

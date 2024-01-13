@@ -98,42 +98,46 @@ starting loopback test' traceCr.
 	sock2 connectTo: NetNameResolver localHostAddress port: 54321.
 	sock1 waitForConnectionFor: self standardTimeout.
 	sock2 waitForConnectionFor: self standardTimeout.
-	sock1 isConnected ifFalse: [self error: 'sock1 not connected'].
-	sock2 isConnected ifFalse: [self error: 'sock2 not connected'].
+	sock1 isConnected ifFalse: [ self error: 'sock1 not connected' ].
+	sock2 isConnected ifFalse: [ self error: 'sock2 not connected' ].
 	'connection established' traceCr.
 	bytesToSend := 5000000.
 	sendBuf := String new: 5000 withAll: $x.
 	receiveBuf := String new: 50000.
 	done := false.
 	packetsSent := packetsRead := bytesSent := bytesReceived := 0.
-	t := Time millisecondsToRun:
-					[[done] whileFalse:
-							[(sock1 sendDone and: [bytesSent < bytesToSend])
-								ifTrue:
-									[packetsSent := packetsSent + 1.
-									bytesSent := bytesSent + (sock1 sendSomeData: sendBuf)].
-							sock2 dataAvailable
-								ifTrue:
-									[packetsRead := packetsRead + 1.
-									bytesReceived := bytesReceived + (sock2 receiveDataInto: receiveBuf)].
-							done := bytesSent >= bytesToSend and: [bytesReceived = bytesSent]]].
+	t := [
+	     [ done ] whileFalse: [
+		     (sock1 sendDone and: [ bytesSent < bytesToSend ]) ifTrue: [
+			     packetsSent := packetsSent + 1.
+			     bytesSent := bytesSent + (sock1 sendSomeData: sendBuf) ].
+		     sock2 dataAvailable ifTrue: [
+			     packetsRead := packetsRead + 1.
+			     bytesReceived := bytesReceived
+			                      + (sock2 receiveDataInto: receiveBuf) ].
+		     done := bytesSent >= bytesToSend and: [
+			             bytesReceived = bytesSent ] ] ] millisecondsToRun.
 	'closing connection' traceCr.
 	sock1 waitForSendDoneFor: self standardTimeout.
 	sock1 close.
 	sock2 waitForDisconnectionFor: self standardTimeout.
 	extraBytes := sock2 discardReceivedData.
-	extraBytes > 0
-		ifTrue: [ ' *** received ' , extraBytes size printString , ' extra bytes ***' traceCr ].
+	extraBytes > 0 ifTrue: [
+		' *** received ' , extraBytes size printString
+		, ' extra bytes ***' traceCr ].
 	sock2 close.
 	sock1 waitForDisconnectionFor: self standardTimeout.
-	sock1 isUnconnectedOrInvalid ifFalse: [self error: 'sock1 not closed'].
-	sock2 isUnconnectedOrInvalid ifFalse: [self error: 'sock2 not closed'].
+	sock1 isUnconnectedOrInvalid ifFalse: [
+		self error: 'sock1 not closed' ].
+	sock2 isUnconnectedOrInvalid ifFalse: [
+		self error: 'sock2 not closed' ].
 	'---------- Connection Closed ----------' traceCr.
 	sock1 destroy.
 	sock2 destroy.
 	('loopback test done; time = ' , t printString) traceCr.
-	((bytesToSend asFloat / t roundTo: 0.01) printString , '* 1000 bytes/sec') traceCr.
-	Smalltalk tools transcript endEntry.
+	((bytesToSend asFloat / t roundTo: 0.01) printString
+	 , '* 1000 bytes/sec') traceCr.
+	Smalltalk tools transcript endEntry
 ]
 
 { #category : 'utilities' }
@@ -288,46 +292,6 @@ Socket class >> register: anObject [
 Socket class >> registry [
 
 	^ Registry ifNil: [ Registry := FinalizationRegistry new ]
-]
-
-{ #category : 'tests' }
-Socket class >> sendTest [
-	"Send data to the 'discard' socket of the given host.
-	Tests the speed of one-way data transfers across the
-	network to the given host. Note that most hosts
-	do not run a discard server."
-
-	"Socket sendTest"
-
-	| sock bytesToSend sendBuf bytesSent t serverName serverAddr |
-	'
-starting send test' traceCr.
-	self initializeNetwork.
-	serverName := UIManager default request: 'What is the destination server?' initialAnswer: 'create.ucsb.edu'.
-	serverAddr := NetNameResolver addressForName: serverName timeout: 10.
-	serverAddr
-		ifNil: [ ^ self inform: 'Could not find an address for ' , serverName ].
-	sock := self new.
-	'---------- Connecting ----------' traceCr.
-	sock connectTo: serverAddr port: 9.
-	sock isConnected
-		ifFalse: [
-			sock destroy.
-			^ self inform: 'could not connect' ].
-	'connection established; sending data' traceCr.
-	bytesToSend := 1000000.
-	sendBuf := String new: 64 * 1024 withAll: $x.
-	bytesSent := 0.
-	t := Time millisecondsToRun: [
-		[ bytesSent < bytesToSend ] whileTrue: [
-			sock sendDone
-				ifTrue: [ bytesSent := bytesSent + (sock sendSomeData: sendBuf) ] ] ].
-	sock waitForSendDoneFor: self standardTimeout.
-	sock destroy.
-	'---------- Connection Closed ----------' traceCr.
-	('send test done; time = ' , t printString) traceCr.
-	((bytesToSend asFloat / t roundTo: 0.01) printString , ' * 1000 bytes/sec') traceCr.
-	Smalltalk tools transcript endEntry.
 ]
 
 { #category : 'utilities' }
@@ -1643,7 +1607,7 @@ Socket >> waitForConnectionFor: timeout ifTimedOut: timeoutBlock [
 	status := self primSocketConnectionStatus: socketHandle.
 	[(status = WaitingForConnection) and: [(msecsEllapsed := Time millisecondsSince: startTime) < msecsDelta]]
 		whileTrue: [
-			semaphore waitTimeoutMSecs: msecsDelta - msecsEllapsed.
+			semaphore waitTimeoutMilliseconds: msecsDelta - msecsEllapsed.
 			status := self primSocketConnectionStatus: socketHandle].
 
 	status = Connected ifFalse: [^timeoutBlock value].
@@ -1681,7 +1645,7 @@ Socket >> waitForDataFor: timeout ifClosed: closedBlock ifTimedOut: timedOutBloc
 	[ (Time millisecondsSince: startTime) < msecsDelta ]
 		whileTrue: [ self dataAvailable ifTrue: [ ^ self ].
 			self isConnected ifFalse: [ ^ closedBlock value ].
-			self readSemaphore waitTimeoutMSecs: (msecsDelta - (Time millisecondsSince: startTime) max: 0) ].
+			self readSemaphore waitTimeoutMilliseconds: (msecsDelta - (Time millisecondsSince: startTime) max: 0) ].
 
 	self dataAvailable
 		ifFalse: [ ^ (self isConnected
@@ -1718,7 +1682,7 @@ Socket >> waitForDisconnectionFor: timeout [
 	[((status == Connected) or: [(status == ThisEndClosed)]) and:
 	 [(Time millisecondsSince: startTime) < msecsDelta]] whileTrue: [
 		self discardReceivedData.
-		self readSemaphore waitTimeoutMSecs:
+		self readSemaphore waitTimeoutMilliseconds:
 			(msecsDelta - (Time millisecondsSince: startTime) max: 0).
 		status := self primSocketConnectionStatus: socketHandle].
 	^ status ~= Connected
@@ -1734,7 +1698,7 @@ Socket >> waitForSendDoneFor: timeout [
 	[(sendDone := self primSocketSendDone: socketHandle) not and: [ self isConnected
 			"Connection end and final data can happen fast, so test in this order"
 		and: [(msecsEllapsed := Time millisecondsSince: startTime) < msecsDelta]]] whileTrue: [
-			self writeSemaphore waitTimeoutMSecs: msecsDelta - msecsEllapsed].
+			self writeSemaphore waitTimeoutMilliseconds: msecsDelta - msecsEllapsed].
 
 	^ sendDone
 ]
