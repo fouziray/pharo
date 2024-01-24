@@ -383,7 +383,7 @@ MessageTally class >> terminateTimerProcess [
 { #category : 'spying' }
 MessageTally class >> time: aBlock [
 
-	^ Time millisecondsToRun: aBlock
+	^ aBlock millisecondsToRun
 ]
 
 { #category : 'comparing' }
@@ -825,7 +825,7 @@ MessageTally >> rootPrintOn: aStream total: total totalTime: totalTime threshold
 		| sons p |
 		sons := g asArray sort.
 		p := g anyOne process.
-		(reportOtherProcesses or: [ p notNil ]) ifTrue: [
+		(reportOtherProcesses or: [ p isNotNil ]) ifTrue: [
 			aStream nextPutAll: '--------------------------------'; cr.
 			aStream nextPutAll: 'Process: ',  (p ifNil: [ 'other processes'] ifNotNil: [ p browserPrintString]); cr.
 			aStream nextPutAll: '--------------------------------'; cr.
