@@ -17,7 +17,8 @@ Class {
 { #category : 'building suites' }
 RectangleParametrizedTest class >> testParameters [
 	^ ParametrizedTestMatrix new
-	addCase: {  (#rectangleClass -> Rectangle). (#rectangleClass -> OptRectangle) };
+	addCase: {  (#rectangleClass -> Rectangle) };
+	addCase: { (#rectangleClass -> OptRectangle) };
 	yourself.
 ]
 
@@ -161,7 +162,7 @@ RectangleParametrizedTest >> testCenter [
 RectangleParametrizedTest >> testCenterEmpty [
 
 	| r1 c |
-	r1 := rectangleClass new setPoint: 30 @ 10 point: 10 @ 20.
+	r1 := rectangleClass origin: 30 @ 10 corner: 10 @ 20.
 	"does not create an empty rectangle"
 	c := r1 center.
 	self assert: (r1 containsPoint: c) description: 'A rectangle contain its center.'.
@@ -175,7 +176,7 @@ RectangleParametrizedTest >> testCenterEmpty [
 RectangleParametrizedTest >> testCenterEmpty2 [
 
 	| r1 c |
-	r1 :=rectangleClass new setPoint: 0 @ 0 point: 0 @ 0.
+	r1 :=rectangleClass origin: 0 @ 0 corner: 0 @ 0.
 	"does not create an empty rectangle"
 	c := r1 center.
 	self deny: (r1 containsPoint: c) description: 'An empty rectangle does not contain its center.'.

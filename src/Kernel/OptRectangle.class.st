@@ -166,7 +166,7 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 	"aRectangle is intersecting; process it"
 	aRectangle origin y > originY
 		ifTrue:
-			[ rr := self origin corner: cornerX @ (yOrigin := aRectangle origin y).
+			[ rr := OptRectangle origin: self origin corner: cornerX @ (yOrigin := aRectangle origin y).
 			rr
 				allAreasOutsideList: aCollection
 				startingAt: index + 1
@@ -174,20 +174,20 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 		ifFalse: [ yOrigin := originY ].
 	aRectangle corner y < cornerY
 		ifTrue:
-			[ rr := originX @ (yCorner := aRectangle corner y) corner: cornerX.
+			[ rr := OptRectangle origin: originX @ (yCorner := aRectangle corner y) corner: cornerX.
 			rr
 				allAreasOutsideList: aCollection
 				startingAt: index + 1
 				do: aBlock ]
 		ifFalse: [ yCorner := cornerY ].
 	aRectangle origin x > originX ifTrue:
-		[ rr := originX @ yOrigin corner: aRectangle origin x @ yCorner.
+		[ rr := OptRectangle origin: originX @ yOrigin corner: aRectangle origin x @ yCorner.
 		rr
 			allAreasOutsideList: aCollection
 			startingAt: index + 1
 			do: aBlock ].
 	aRectangle corner x < cornerX ifTrue:
-		[ rr := aRectangle corner x @ yOrigin corner: cornerX @ yCorner.
+		[ rr := OptRectangle origin: aRectangle corner x @ yOrigin corner: cornerX @ yCorner.
 		rr
 			allAreasOutsideList: aCollection
 			startingAt: index + 1
@@ -201,10 +201,10 @@ OptRectangle >> amountToTranslateWithin: aRectangle [
 	| dx dy |
 	dx := 0.
 	dy := 0.
-	self right > aRectangle right ifTrue: [ dx := aRectangle right - self right ].
-	self bottom > aRectangle bottom ifTrue: [ dy := aRectangle bottom - self bottom ].
-	self left + dx < aRectangle left ifTrue: [ dx := aRectangle left - self left ].
-	self top + dy < aRectangle top ifTrue: [ dy := aRectangle top - self top ].
+	cornerX > aRectangle right ifTrue: [ dx := aRectangle right - cornerX ].
+	cornerY > aRectangle bottom ifTrue: [ dy := aRectangle bottom - cornerY ].
+	originX + dx < aRectangle left ifTrue: [ dx := aRectangle left - originX ].
+	originY + dy < aRectangle top ifTrue: [ dy := aRectangle top - originY ].
 	^ dx @ dy
 ]
 
@@ -227,28 +227,28 @@ OptRectangle >> areasOutside: aRectangle [
 		| yOrigin yCorner |
 		aRectangle origin y > originY
 			ifTrue:
-				[ aStream nextPut: (self origin corner: cornerX @ (yOrigin := aRectangle origin y)) ]
+				[ aStream nextPut: ( OptRectangle origin: self origin corner: cornerX @ (yOrigin := aRectangle origin y)) ]
 			ifFalse: [ yOrigin := originY ].
 		aRectangle corner y < cornerY
 			ifTrue:
-				[ aStream nextPut: (originX @ (yCorner := aRectangle corner y) corner: self corner) ]
+				[ aStream nextPut: ( OptRectangle origin: originX @ (yCorner := aRectangle corner y) corner: self corner) ]
 			ifFalse: [ yCorner := cornerY ].
 		aRectangle origin x > originX ifTrue:
-			[ aStream nextPut: (originX @ yOrigin corner: aRectangle origin x @ yCorner) ].
+			[ aStream nextPut: ( OptRectangle origin: originX @ yOrigin corner: aRectangle origin x @ yCorner) ].
 		aRectangle corner x < cornerX ifTrue:
-			[ aStream nextPut: (aRectangle corner x @ yOrigin corner: cornerX @ yCorner) ] ]
+			[ aStream nextPut: ( OptRectangle origin: aRectangle corner x @ yOrigin corner: cornerX @ yCorner) ] ]
 ]
 
 { #category : 'rectangle functions' }
 OptRectangle >> bordersOn: her along: herSide [
-	((herSide = #right and: [self left = her right])
-	or: [herSide = #left and: [self right = her left]])
+	((herSide = #right and: [originX = her right])
+	or: [herSide = #left and: [cornerX = her left]])
 		ifTrue:
-		[^ (self top max: her top) < (self bottom min: her bottom)].
-	((herSide = #bottom and: [self top = her bottom])
-	or: [herSide = #top and: [self bottom = her top]])
+		[^ (originY max: her top) < (cornerY min: her bottom)].
+	((herSide = #bottom and: [originY = her bottom])
+	or: [herSide = #top and: [cornerY = her top]])
 		ifTrue:
-		[^ (self left max: her left) < (self right min: her right)].
+		[^ (originX max: her left) < (cornerX min: her right)].
 	^ false
 ]
 
@@ -261,8 +261,9 @@ OptRectangle >> bottom [
 
 { #category : 'accessing' }
 OptRectangle >> bottom: aNumber [
+
 	cornerY:=aNumber .
-	^self
+	^ self
 ]
 
 { #category : 'accessing' }
@@ -270,7 +271,7 @@ OptRectangle >> bottomCenter [
 	"Answer the point at the center of the bottom horizontal line of the
 	receiver."
 
-	^self center x @ self bottom
+	^self center x @ cornerY
 ]
 
 { #category : 'accessing' }
@@ -300,7 +301,7 @@ OptRectangle >> ceiling [
 	Return receiver if it is already an integerRectangle."
 
 	self isIntegerRectangle ifTrue: [ ^ self ].
-	^ self origin ceiling corner: self corner ceiling
+	^ OptRectangle origin: self origin ceiling corner: self corner ceiling
 ]
 
 { #category : 'accessing' }
@@ -334,8 +335,9 @@ OptRectangle >> compressTo: grid [
 	Rounding is done by upper value on origin and lower value on corner so that
 	rounded rectangle is inside self."
 
-	^Rectangle origin: (self origin roundUpTo: grid)
-				corner: (self corner roundDownTo: grid)
+	^ OptRectangle
+		  origin: (self origin roundUpTo: grid)
+		  corner: (self corner roundDownTo: grid)
 ]
 
 { #category : 'truncation and round off' }
@@ -344,7 +346,7 @@ OptRectangle >> compressed [
 	Rounding is done by upper value on origin and lower value on corner so that
 	rounded rectangle is inside self."
 
-	^Rectangle origin: self origin ceiling corner: self corner floor
+	^ OptRectangle origin: self origin ceiling corner: self corner floor
 ]
 
 { #category : 'testing' }
@@ -390,14 +392,14 @@ OptRectangle >> deltaToEnsureInOrCentered: r extra: aNumber [
 	dX := dY := 0.
 	halfXDiff := ((r width - self width) * aNumber) truncated.
 	halfYDiff := ((r height - self height) * aNumber) truncated.
-	self left < r left
-		ifTrue: [ dX := self left - r left - halfXDiff ]
+	originX < r left
+		ifTrue: [ dX := originX - r left - halfXDiff ]
 		ifFalse:
-			[ self right > r right ifTrue: [ dX := self right - r right + halfXDiff ] ].
-	self top < r top
-		ifTrue: [ dY := self top - r top - halfYDiff ]
+			[ cornerX > r right ifTrue: [ dX := cornerX - r right + halfXDiff ] ].
+	originY < r top
+		ifTrue: [ dY := originY - r top - halfYDiff ]
 		ifFalse:
-			[ self bottom > r bottom ifTrue: [ dY := self bottom - r bottom + halfYDiff ] ].
+			[ cornerY > r bottom ifTrue: [ dY := cornerY - r bottom + halfYDiff ] ].
 	^ dX @ dY
 ]
 
@@ -405,9 +407,9 @@ OptRectangle >> deltaToEnsureInOrCentered: r extra: aNumber [
 OptRectangle >> encompass: aPoint [
 	"Answer a Rectangle that contains both the receiver and aPoint."
 
-	^ Rectangle
-		origin: (self origin min: aPoint)
-		corner: (self corner max:  aPoint)
+	^ OptRectangle
+		  origin: (self origin min: aPoint)
+		  corner: (self corner max: aPoint)
 ]
 
 { #category : 'rectangle functions' }
@@ -424,8 +426,9 @@ OptRectangle >> expandTo: grid [
 	Rounding is done by upper value on origin and lower value on corner so that
 	self is inside rounded rectangle."
 
-	^Rectangle origin: (self origin roundDownTo: grid)
-				corner: (self corner roundUpTo: grid)
+	^ OptRectangle
+		  origin: (self origin roundDownTo: grid)
+		  corner: (self corner roundUpTo: grid)
 ]
 
 { #category : 'truncation and round off' }
@@ -434,7 +437,7 @@ OptRectangle >> expanded [
 	Rounding is done by upper value on origin and lower value on corner so that
 	self is inside rounded rectangle."
 
-	^Rectangle origin: self origin floor corner: self corner ceiling
+	^ OptRectangle origin: self origin floor corner: self corner ceiling
 ]
 
 { #category : 'rectangle functions' }
@@ -484,37 +487,37 @@ OptRectangle >> forPoint: aPoint closestSideDistLen: sideDistLenBlock [
 	side == #right ifTrue:
 		[ ^ sideDistLenBlock
 			value: side
-			value: (self right - aPoint x) abs
+			value: (cornerX - aPoint x) abs
 			value: ((aPoint y
-					between: self top
-					and: self bottom)
+					between: originY
+					and: cornerY)
 					ifTrue: [ self height ]
 					ifFalse: [ 0 ]) ].
 	side == #left ifTrue:
 		[ ^ sideDistLenBlock
 			value: side
-			value: (self left - aPoint x) abs
+			value: (originX - aPoint x) abs
 			value: ((aPoint y
-					between: self top
-					and: self bottom)
+					between: originY
+					and: cornerY)
 					ifTrue: [ self height ]
 					ifFalse: [ 0 ]) ].
 	side == #bottom ifTrue:
 		[ ^ sideDistLenBlock
 			value: side
-			value: (self bottom - aPoint y) abs
+			value: (cornerY - aPoint y) abs
 			value: ((aPoint x
-					between: self left
-					and: self right)
+					between: originX
+					and: cornerX)
 					ifTrue: [ self width ]
 					ifFalse: [ 0 ]) ].
 	side == #top ifTrue:
 		[ ^ sideDistLenBlock
 			value: side
-			value: (self top - aPoint y) abs
+			value: (originY - aPoint y) abs
 			value: ((aPoint x
-					between: self left
-					and: self right)
+					between: originX
+					and: cornerX)
 					ifTrue: [ self width ]
 					ifFalse: [ 0 ]) ]
 ]
@@ -565,9 +568,9 @@ OptRectangle >> insetOriginBy: originDeltaPoint cornerBy: cornerDeltaPoint [
 	"Answer a Rectangle that is inset from the receiver by a given amount in
 	the origin and corner."
 
-	^Rectangle
-		origin: self origin + originDeltaPoint
-		corner: self corner - cornerDeltaPoint
+	^ OptRectangle
+		  origin: self origin + originDeltaPoint
+		  corner: self corner - cornerDeltaPoint
 ]
 
 { #category : 'transforming' }
@@ -601,7 +604,7 @@ OptRectangle >> intersect: aRectangle ifNone: aBlock [
 	aPoint := aRectangle corner.
 	right := aPoint x min: cornerX.
 	bottom := aPoint y min: cornerY.
-	^ Rectangle origin: left @ top corner: right @ bottom
+	^ OptRectangle origin: left @ top corner: right @ bottom
 ]
 
 { #category : 'testing' }
@@ -660,23 +663,24 @@ OptRectangle >> left [
 
 { #category : 'accessing' }
 OptRectangle >> left: aNumber [
-	^aNumber @ originY corner: cornerX@cornerY
+
+	^ OptRectangle origin: aNumber @ originY corner: cornerX@cornerY
 ]
 
 { #category : 'accessing' }
 OptRectangle >> leftCenter [
 	"Answer the point at the center of the receiver's left vertical line."
 
-	^self left @ self center y
+	^originX @ self center y
 ]
 
 { #category : 'rectangle functions' }
 OptRectangle >> merge: aRectangle [
 	"Answer a Rectangle that contains both the receiver and aRectangle."
 
-	^Rectangle
-		origin: (self origin min: aRectangle origin)
-		corner: (self corner max: aRectangle corner)
+	^ OptRectangle
+		  origin: (self origin min: aRectangle origin)
+		  corner: (self corner max: aRectangle corner)
 ]
 
 { #category : 'accessing' }
@@ -704,10 +708,10 @@ OptRectangle >> pointNearestTo: aPoint [
 	(self containsPoint: aPoint)
 		ifTrue:
 			[ side := self sideNearestTo: aPoint.
-			side == #right ifTrue: [ ^ self right @ aPoint y ].
-			side == #left ifTrue: [ ^ self left @ aPoint y ].
-			side == #bottom ifTrue: [ ^ aPoint x @ self bottom ].
-			side == #top ifTrue: [ ^ aPoint x @ self top ] ]
+			side == #right ifTrue: [ ^ cornerX @ aPoint y ].
+			side == #left ifTrue: [ ^ originX @ aPoint y ].
+			side == #bottom ifTrue: [ ^ aPoint x @ cornerY ].
+			side == #top ifTrue: [ ^ aPoint x @ originY ] ]
 		ifFalse: [ ^ aPoint adhereTo: self ]
 ]
 
@@ -753,7 +757,7 @@ OptRectangle >> quickMerge: aRectangle [
 	^ useRcvr
 		ifTrue: [ self ]
 		ifFalse:
-			[ Rectangle
+			[ OptRectangle
 				origin: minX @ minY
 				corner: maxX @ maxY ]
 ]
@@ -777,7 +781,7 @@ OptRectangle >> quickMergePoint: aPoint [
 { #category : 'rectangle functions' }
 OptRectangle >> rectanglesAt: y height: ht [
 
-	^ y + ht > self bottom
+	^ y + ht > cornerY
 		  ifTrue: [ #(  ) ]
 		  ifFalse: [ { (originX @ y corner: cornerX @ (y + ht)) } ]
 ]
@@ -791,14 +795,15 @@ OptRectangle >> right [
 
 { #category : 'accessing' }
 OptRectangle >> right: aNumber [
-	^ self origin corner: aNumber @ cornerY
+
+	^ OptRectangle origin: self origin corner: aNumber @ cornerY
 ]
 
 { #category : 'accessing' }
 OptRectangle >> rightCenter [
 	"Answer the point at the center of the receiver's right vertical line."
 
-	^self right @ self center y
+	^cornerX @ self center y
 ]
 
 { #category : 'transforming' }
@@ -812,22 +817,27 @@ OptRectangle >> rotateBy: direction centerAt: aPoint [
 OptRectangle >> roundTo: grid [
 	"Answer a Rectangle whose origin and corner are rounded to grid x and grid y."
 
-	^Rectangle origin: (self origin roundTo: grid)
-				corner: (self corner roundTo: grid)
+	^ OptRectangle
+		  origin: (self origin roundTo: grid)
+		  corner: (self corner roundTo: grid)
 ]
 
 { #category : 'truncation and round off' }
 OptRectangle >> rounded [
 	"Answer a Rectangle whose origin and corner are rounded."
 
-	^Rectangle origin: self origin rounded corner: self corner rounded
+	^ OptRectangle
+		  origin: self origin rounded
+		  corner: self corner rounded
 ]
 
 { #category : 'transforming' }
 OptRectangle >> scaleBy: scale [
 	"Answer a Rectangle scaled by scale, a Point or a scalar."
 
-	^Rectangle origin: self origin * scale corner: self corner * scale
+	^ OptRectangle
+		  origin: self origin * scale
+		  corner: self corner * scale
 ]
 
 { #category : 'transforming' }
@@ -872,10 +882,10 @@ OptRectangle >> setPoint: pt1 point: pt2 [
 { #category : 'rectangle functions' }
 OptRectangle >> sideNearestTo: aPoint [
 	| distToLeft distToRight distToTop distToBottom closest side |
-	distToLeft := aPoint x - self left.
-	distToRight := self right - aPoint x.
-	distToTop := aPoint y - self top.
-	distToBottom := self bottom - aPoint y.
+	distToLeft := aPoint x - originX.
+	distToRight := cornerX - aPoint x.
+	distToTop := aPoint y - originY.
+	distToBottom := cornerY - aPoint y.
 	closest := distToLeft.
 	side := #left.
 	distToRight < closest ifTrue:
@@ -923,14 +933,15 @@ OptRectangle >> top [
 
 { #category : 'accessing' }
 OptRectangle >> top: aNumber [
-	^originX @ aNumber corner: (cornerX@cornerY )
+
+	^ OptRectangle origin: originX @ aNumber corner: (cornerX@cornerY )
 ]
 
 { #category : 'accessing' }
 OptRectangle >> topCenter [
 	"Answer the point at the center of the receiver's top horizontal line."
 
-	^self center x @ self top
+	^self center x @ originY
 ]
 
 { #category : 'accessing' }
@@ -952,7 +963,9 @@ OptRectangle >> topRight [
 OptRectangle >> translateBy: factor [
 	"Answer a Rectangle translated by factor, a Point or a scalar."
 
-	^Rectangle origin: self origin + factor corner: self corner + factor
+	^ OptRectangle
+		  origin: self origin + factor
+		  corner: self corner + factor
 ]
 
 { #category : 'transforming' }
@@ -975,21 +988,23 @@ OptRectangle >> translatedToBeWithin: aRectangle [
 OptRectangle >> truncateTo: grid [
 	"Answer a Rectangle whose origin and corner are truncated to grid x and grid y."
 
-	^Rectangle origin: (self origin truncateTo: grid)
-				corner: (self corner truncateTo: grid)
+	^ OptRectangle
+		  origin: (self origin truncateTo: grid)
+		  corner: (self corner truncateTo: grid)
 ]
 
 { #category : 'truncation and round off' }
 OptRectangle >> truncated [
 	"Answer a Rectangle whose origin and corner have any fractional parts removed. Answer the receiver if its coordinates are already integral."
 
-	(originX isInteger and:
-	[originY isInteger and:
-	[cornerX isInteger and:
-	[cornerY isInteger]]])
-		ifTrue: [^ self].
+	(originX isInteger and: [
+		 originY isInteger and: [
+			 cornerX isInteger and: [ cornerY isInteger ] ] ]) ifTrue: [
+		^ self ].
 
-	^ Rectangle origin: self origin truncated corner: self corner truncated
+	^ OptRectangle
+		  origin: self origin truncated
+		  corner: self corner truncated
 ]
 
 { #category : 'accessing' }
