@@ -44,7 +44,7 @@ ReRemoveSharedVariablesDriver >> configureRefactoring [
 	refactoring := RBUpFrontPreconditionCheckingCompositeRefactoring new
 							model: model; 
 							refactorings: (variables collect: [:each | 
-									RBRemoveSharedVariableRefactoring model: model remove: each from: class]);
+									ReRemoveSharedVariableRefactoring model: model remove: each from: class]);
 								yourself.
 	refactoring prepareForInteractiveMode
 ]
@@ -76,8 +76,11 @@ ReRemoveSharedVariablesDriver >> runRefactoring [
 	
 	refactoring failedApplicabilityPreconditions 
 		ifNotEmpty: [ ^ self inform: 'The shared variable does not exist' ].
-	
-	self applyChanges
+
+	refactoring failedBreakingChangePreconditions
+		ifEmpty: [ self applyChanges ]
+		ifNotEmpty: [ self handleBreakingChanges ]
+
 ]
 
 { #category : 'initialization' }
