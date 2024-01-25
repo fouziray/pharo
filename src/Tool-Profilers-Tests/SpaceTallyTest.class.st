@@ -26,6 +26,14 @@ SpaceTallyTest >> test2Classes [
 ]
 
 { #category : 'tests' }
+SpaceTallyTest >> testPrintClassSpaceComposition [
+	| contents |
+	contents := String
+		streamContents: [ :s | SpaceTally new printClassSpaceCompositionOf: Rectangle  on: s ].
+	self assert: contents isString
+]
+
+{ #category : 'tests' }
 SpaceTallyTest >> testPrintOnStream [
 	| contents |
 	contents := String

@@ -126,6 +126,43 @@ SpaceTally >> preAllocateResultsFor: classes [
 		do: [ :cl | results addItem: (SpaceTallyItem analyzedClassName: cl name) ]
 ]
 
+{ #category : 'printing' }
+SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream [
+ " Prints all possible execution types of each instance variable from aClass instances in the whole system, with percentage of each type"
+
+	| a instVarNames aStreamCopy numberOfInstances|
+	aStreamCopy := aStream deepCopy.
+	instVarNames := aClass instVarNames.
+	a := Dictionary new.
+	aClass instVarNames do: [ :varName |
+		aClass allInstancesDo: [ :inst |
+			a
+				at: (inst instVarNamed: varName) className
+				put: ([ (a at: (inst instVarNamed: varName) className) + 1 ]
+						 on: KeyNotFound
+						 do: [ 1 ]) ].
+		aStream nextPutAll: varName , ': '.
+		numberOfInstances := aClass allInstances size.
+		a associationsDo: [ :instVarOccurences |
+			aStream nextPutAll:
+				(instVarOccurences value / numberOfInstances asFloat * 100)
+					asInteger asString , ' % ' , instVarOccurences key , ', ' ].
+		aStream nextPutAll: String cr ", Character tab asString".
+
+		aStreamCopy := self
+			               printClassSpaceCompositionOf:
+			               (SmalltalkImage current classNamed:
+				                (a keyAtValue: a max))
+			               on: aStream.
+		a := Dictionary new .
+		aStream nextPutAll: String cr.
+		].
+	"aStream position: aStream position -1."
+		"aStream nextPutAll: String cr."
+
+	^ aStreamCopy
+]
+
 { #category : 'fileout' }
 SpaceTally >> printHeader: aStream [
 	aStream
