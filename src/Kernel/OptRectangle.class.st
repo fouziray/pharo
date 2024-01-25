@@ -22,7 +22,7 @@ Instance variables:
 "
 Class {
 	#name : 'OptRectangle',
-	#superclass : 'Object',
+	#superclass : 'Rectangle',
 	#instVars : [
 		'cornerX',
 		'cornerY',
@@ -161,7 +161,7 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 
 	[ index <= aCollection size ifFalse: [ ^ aBlock value: self ].
 	aRectangle := aCollection at: index.
-	originX@originY <= aRectangle corner and: [ aRectangle origin <= cornerX@cornerY ] ] whileFalse: [ index := index + 1 ].
+	(originX@originY) <= aRectangle corner and: [ aRectangle origin <= (cornerX@cornerY) ] ] whileFalse: [ index := index + 1 ].
 
 	"aRectangle is intersecting; process it"
 	aRectangle origin y > originY
@@ -872,6 +872,15 @@ OptRectangle >> setLeft: left right: right top: top bottom: bottom [
 { #category : 'private' }
 OptRectangle >> setPoint: pt1 point: pt2 [
 
+	pt1
+		ifNil:  [ 
+			pt2 ifNil: [ 
+				originX:=nil. 
+				originY:=nil. 
+				cornerY:=nil. 
+				cornerX:=nil .
+				 ^ self ] 
+				].
 	originX :=(pt1 x min: pt2 x).
 	originY:=pt1 y min: pt2 y.
 	cornerX:=pt1 x max: pt2 x.

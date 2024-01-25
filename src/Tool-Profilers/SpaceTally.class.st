@@ -148,12 +148,12 @@ SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream [
 				(instVarOccurences value / numberOfInstances asFloat * 100)
 					asInteger asString , ' % ' , instVarOccurences key , ', ' ].
 		aStream nextPutAll: String cr ", Character tab asString".
-
-		aStreamCopy := self
+		a ifNotEmpty: [  
+							aStreamCopy := self
 			               printClassSpaceCompositionOf:
 			               (SmalltalkImage current classNamed:
 				                (a keyAtValue: a max))
-			               on: aStream.
+			               on: aStream. ].
 		a := Dictionary new .
 		aStream nextPutAll: String cr.
 		].
