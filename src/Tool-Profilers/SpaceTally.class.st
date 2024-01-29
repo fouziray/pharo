@@ -128,6 +128,14 @@ SpaceTally >> preAllocateResultsFor: classes [
 
 { #category : 'printing' }
 SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream [
+
+	
+	aStream nextPutAll: ' Composition of class: ', aClass name ,' ', String cr.
+	self printClassSpaceCompositionOf: aClass on: aStream  depth: 0.
+]
+
+{ #category : 'printing' }
+SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream depth: depth [
  " Prints all possible execution types of each instance variable from aClass instances in the whole system, with percentage of each type"
 
 	| a instVarNames aStreamCopy numberOfInstances|
@@ -141,7 +149,7 @@ SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream [
 				put: ([ (a at: (inst instVarNamed: varName) className) + 1 ]
 						 on: KeyNotFound
 						 do: [ 1 ]) ].
-		aStream nextPutAll: varName , ': '.
+		aStream nextPutAll: (String tab repeat: depth) , varName, ': '.
 		numberOfInstances := aClass allInstances size.
 		a associationsDo: [ :instVarOccurences |
 			aStream nextPutAll:
@@ -153,12 +161,9 @@ SpaceTally >> printClassSpaceCompositionOf: aClass on: aStream [
 			               printClassSpaceCompositionOf:
 			               (SmalltalkImage current classNamed:
 				                (a keyAtValue: a max))
-			               on: aStream. ].
+			               on: aStream depth: (depth +1). ].
 		a := Dictionary new .
-		aStream nextPutAll: String cr.
 		].
-	"aStream position: aStream position -1."
-		"aStream nextPutAll: String cr."
 
 	^ aStreamCopy
 ]
