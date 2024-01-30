@@ -117,7 +117,7 @@ OptRectangle >> = aRectangle [
 	"Answer true if the receiver's species, origin and corner match aRectangle's."
 
 	^ self species = aRectangle species and: [
-		  originX@originY = aRectangle origin and: [ cornerX@cornerY = aRectangle corner ] ]
+		originX = aRectangle left and:[ originY = aRectangle top and:[ cornerX = aRectangle right and:[ cornerY = aRectangle bottom ] ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -161,7 +161,9 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 
 	[ index <= aCollection size ifFalse: [ ^ aBlock value: self ].
 	aRectangle := aCollection at: index.
-	(originX@originY) <= aRectangle corner and: [ aRectangle origin <= (cornerX@cornerY) ] ] whileFalse: [ index := index + 1 ].
+	"(originX@originY) <= aRectangle corner and: [ aRectangle origin <= (cornerX@cornerY) ]"
+	self intersects: aRectangle
+	 ] whileFalse: [ index := index + 1 ].
 
 	"aRectangle is intersecting; process it"
 	aRectangle origin y > originY
@@ -357,15 +359,13 @@ OptRectangle >> containsPoint: aPoint [
 	"((0@0 corner: 100@100) containsPoint: 0@0) >>> true"
 	"((0@0 corner: 100@100) containsPoint: 100@50) >>> false"
 	"((0@0 corner: 100@100) containsPoint: 100@100) >>> false"
-
-	^((originX@originY) <= aPoint )and: [aPoint < (cornerX@cornerY)]
+	^ originX  <= aPoint x and:[ originY <= aPoint y and:[ cornerX > aPoint x and: [ cornerY > aPoint y ] ]].
 ]
 
 { #category : 'testing' }
 OptRectangle >> containsRect: aRect [
 	"Answer whether aRect is within the receiver (OK to coincide)."
-
-	^ aRect origin >= self origin and: [aRect corner <= self corner]
+	^ aRect origin x >= originX & aRect origin y >= originY & aRect corner x <= cornerX & aRect corner y <=cornerY 
 ]
 
 { #category : 'accessing' }
@@ -474,7 +474,7 @@ OptRectangle >> floor [
 
 	self isIntegerRectangle ifTrue: [ ^ self ] .
 
-	^ self origin floor corner: self corner floor
+	^ OptRectangle origin: self origin floor corner: self corner floor
 ]
 
 { #category : 'rectangle functions' }
@@ -547,7 +547,7 @@ OptRectangle >> innerCorners [
 	ie, the most extreme pixels included,
 	in the order of a quadrilateral spec for WarpBlt"
 	| r1 |
-	r1 := self topLeft corner: self bottomRight - (1 @ 1).
+	r1 := OptRectangle origin: self topLeft corner: self bottomRight - (1 @ 1).
 	^ Array
 		with: r1 topLeft
 		with: r1 bottomLeft
@@ -577,7 +577,7 @@ OptRectangle >> insetOriginBy: originDeltaPoint cornerBy: cornerDeltaPoint [
 OptRectangle >> interpolateTo: end at: amountDone [
 	"Interpolate between the instance and end after the specified amount has been done (0 - 1)."
 
-	^(self origin interpolateTo: end origin at: amountDone)
+	^ OptRectangle origin: (self origin interpolateTo: end origin at: amountDone)
 		corner: (self corner interpolateTo: end corner at: amountDone)
 ]
 
@@ -585,7 +585,7 @@ OptRectangle >> interpolateTo: end at: amountDone [
 OptRectangle >> intersect: aRectangle [
 	"Answer a Rectangle that is the area in which the receiver overlaps with
 	aRectangle."
-	^ self intersect: aRectangle ifNone:[0@0 extent:0@0]
+	^ self intersect: aRectangle ifNone:[OptRectangle origin:0@0 extent:0@0]
 ]
 
 { #category : 'rectangle functions' }
@@ -775,7 +775,7 @@ OptRectangle >> quickMergePoint: aPoint [
 	maxY := aPoint y >= cornerY ifTrue: [useRcvr := false. aPoint y + 1] ifFalse: [cornerY].
 	^useRcvr
 		ifTrue: [self]
-		ifFalse: [minX@minY corner: maxX@maxY]
+		ifFalse: [ OptRectangle origin: minX@minY corner: maxX@maxY]
 ]
 
 { #category : 'rectangle functions' }
@@ -783,7 +783,7 @@ OptRectangle >> rectanglesAt: y height: ht [
 
 	^ y + ht > cornerY
 		  ifTrue: [ #(  ) ]
-		  ifFalse: [ { (originX @ y corner: cornerX @ (y + ht)) } ]
+		  ifFalse: [ { ( OptRectangle origin: originX @ y corner: cornerX @ (y + ht)) } ]
 ]
 
 { #category : 'accessing' }
@@ -809,8 +809,8 @@ OptRectangle >> rightCenter [
 { #category : 'transforming' }
 OptRectangle >> rotateBy: direction centerAt: aPoint [
 	"Return a copy rotated #right, #left, or #pi about aPoint"
-	^ (originX@originY rotateBy: direction centerAt: aPoint)
-		rectangle: (cornerX@cornerY rotateBy: direction centerAt: aPoint)
+	^ OptRectangle origin: (originX@originY rotateBy: direction centerAt: aPoint)
+		corner: (cornerX@cornerY rotateBy: direction centerAt: aPoint)
 ]
 
 { #category : 'truncation and round off' }
@@ -843,7 +843,7 @@ OptRectangle >> scaleBy: scale [
 { #category : 'transforming' }
 OptRectangle >> scaleFrom: rect1 to: rect2 [
 	"Produce a rectangle stretched according to the stretch from rect1 to rect2"
-	^ (self origin scaleFrom: rect1 to: rect2)
+	^ OptRectangle origin: (self origin scaleFrom: rect1 to: rect2)
 		corner: (self corner scaleFrom: rect1 to: rect2)
 ]
 
@@ -853,9 +853,9 @@ OptRectangle >> scaledAndCenteredIn: aRect [
 	but with the same aspect ratio as the receiver."
 
 	^self width / aRect width > (self height / aRect height)
-		ifTrue: [aRect left @ (aRect leftCenter y - (self height * (aRect width / self width) / 2))
+		ifTrue: [ OptRectangle origin: aRect left @ (aRect leftCenter y - (self height * (aRect width / self width) / 2))
 					corner: aRect right @ (aRect rightCenter y + (self height * (aRect width / self width) / 2))]
-		ifFalse: [aRect topCenter x - (self width * (aRect height / self height) / 2) @ aRect top
+		ifFalse: [OptRectangle origin: (aRect topCenter x - (self width * (aRect height / self height) / 2) @ aRect top)
 					corner: (aRect topCenter x + (self width * (aRect height / self height) / 2)) @ aRect bottom]
 ]
 
@@ -919,7 +919,7 @@ Display border: r width: 1.
 OptRectangle >> squishedWithin: aRectangle [
 	"Return an adjustment of the receiver that fits within aRectangle by reducing its size, not by changing its origin.  "
 
-	^ self origin corner: ( self corner min: aRectangle bottomRight)
+	^ OptRectangle origin: self origin corner: ( self corner min: aRectangle bottomRight)
 
 "(50 @ 50 corner: 160 @ 100) squishedWithin:  (20 @ 10 corner: 90 @ 85)"
 ]
@@ -1075,10 +1075,10 @@ OptRectangle >> withSideOrCorner: side setToPoint: newPoint minExtent: minExtent
 	side = #bottom ifTrue: [^ self withBottom: (newPoint y min: limit - minExtent y max: originY + minExtent y)].
 	side = #left ifTrue: [^ self withLeft: (newPoint x min: cornerX - minExtent x max: limit + minExtent x)].
 	side = #right ifTrue: [^ self withRight: (newPoint x min: limit - minExtent x max: originX + minExtent x)].
-	side = #topLeft ifTrue: [^ (newPoint min: self corner - minExtent) corner: self bottomRight].
-	side = #bottomRight ifTrue: [^ self topLeft corner: (newPoint max: self origin + minExtent)].
-	side = #bottomLeft ifTrue: [^ self topRight rectangle: ((newPoint x min: cornerX - minExtent x) @ (newPoint y max: originY + minExtent y))].
-	side = #topRight ifTrue: [^ self bottomLeft rectangle: ((newPoint x max: originX + minExtent x) @ (newPoint y min: cornerY - minExtent y))]
+	side = #topLeft ifTrue: [^ OptRectangle origin: (newPoint min: self corner - minExtent) corner: self bottomRight].
+	side = #bottomRight ifTrue: [^ OptRectangle origin: self topLeft corner: (newPoint max: self origin + minExtent)].
+	side = #bottomLeft ifTrue: [^ OptRectangle origin: self topRight corner: ((newPoint x min: cornerX - minExtent x) @ (newPoint y max: originY + minExtent y))].
+	side = #topRight ifTrue: [^ OptRectangle origin: self bottomLeft corner: ((newPoint x max: originX + minExtent x) @ (newPoint y min: cornerY - minExtent y))]
 ]
 
 { #category : 'rectangle functions' }

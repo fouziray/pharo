@@ -259,7 +259,9 @@ RectangleParametrizedTest >> testEquals [
 		equals: (rectangleClass origin: 10 @ 10 corner: 20 @ 20).
 	self
 		assert: (rectangleClass origin: 10 @ 10 corner: 20 @ 20)
-		equals: (rectangleClass origin: 10 @ 10 corner: 20 @ 20)
+		equals: (rectangleClass origin: 10 @ 10 corner: 20 @ 20).
+	self 
+		assert: ( (rectangleClass origin: 10 @ 10 corner: 20 @ 20) = (rectangleClass origin: 10 @ 10 corner: 20 @ 20) )
 ]
 
 { #category : 'tests' }
