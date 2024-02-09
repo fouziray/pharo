@@ -29,9 +29,9 @@ RectangleParametrizedTest >> testRectangleBecomeOptRectangle [
 		for: self.
 	c shouldClearBackground: false.
 	
-	t1:= [c] benchFor: 100 milliSeconds .
+	t1:= [c] benchFor: 200 milliSeconds .
 	Rectangle allInstancesDo: [ :inst | inst become: (OptRectangle origin: inst origin corner: inst corner)  ].
-	t2:= [c] benchFor: 100 milliSeconds .
+	t2:= [c] benchFor: 200 milliSeconds .
 	self assert: ((t1 compareTo: t2) frequencyFactor > 1).
 
 ]

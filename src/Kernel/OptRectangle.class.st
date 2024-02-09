@@ -161,8 +161,8 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 
 	[ index <= aCollection size ifFalse: [ ^ aBlock value: self ].
 	aRectangle := aCollection at: index.
-	"(originX@originY) <= aRectangle corner and: [ aRectangle origin <= (cornerX@cornerY) ]"
-	self intersects: aRectangle
+	(originX@originY) <= aRectangle corner and: [ aRectangle origin <= (cornerX@cornerY) ]
+	"self intersects: aRectangle"
 	 ] whileFalse: [ index := index + 1 ].
 
 	"aRectangle is intersecting; process it"
@@ -176,7 +176,7 @@ OptRectangle >> allAreasOutsideList: aCollection startingAt: startIndex do: aBlo
 		ifFalse: [ yOrigin := originY ].
 	aRectangle corner y < cornerY
 		ifTrue:
-			[ rr := OptRectangle origin: originX @ (yCorner := aRectangle corner y) corner: cornerX.
+			[ rr := OptRectangle origin: originX @ (yCorner := aRectangle corner y) corner: cornerX@cornerY .
 			rr
 				allAreasOutsideList: aCollection
 				startingAt: index + 1
@@ -365,7 +365,7 @@ OptRectangle >> containsPoint: aPoint [
 { #category : 'testing' }
 OptRectangle >> containsRect: aRect [
 	"Answer whether aRect is within the receiver (OK to coincide)."
-	^ aRect origin x >= originX & aRect origin y >= originY & aRect corner x <= cornerX & aRect corner y <=cornerY 
+	^ (aRect origin x >= originX) & (aRect origin y >= originY) & (aRect corner x <= cornerX) & (aRect corner y <=cornerY )
 ]
 
 { #category : 'accessing' }
