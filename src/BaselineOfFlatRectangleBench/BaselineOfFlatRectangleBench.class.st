@@ -20,6 +20,9 @@ BaselineOfFlatRectangleBench >> baseline: spec [
 				package: 'Graphics-Tests';
 				package: 'Tool-Profilers';
 				package: 'Tool-Profilers-Tests';
+				package: 'OSWindow-SDL2';
+				package:'Fuel-Core';
+				package: 'Athens-Core';
 				baseline: 'HoneyGinger'
 				with: [ spec repository: 'github://tomooda/HoneyGinger/repository:tomooda/HoneyGinger' ]
 		]
