@@ -15,13 +15,16 @@ BaselineOfFlatRectangleBench >> baseline: spec [
 			spec
 				package: 'Kernel';
 				baseline: 'SMark'
-				with: [ spec repository: 'github://smarr/SMark:smarr/SMark'];
+				with: [ spec repository: 'github://smarr/SMark'];
 				package: 'System-Benchmark';
 				package: 'Graphics-Tests';
 				package: 'Tool-Profilers';
 				package: 'Tool-Profilers-Tests';
+				package: 'OSWindow-SDL2';
+				package:'Fuel-Core';
+				package: 'Athens-Core';
 				baseline: 'HoneyGinger'
-				with: [ spec repository: 'github://tomooda/HoneyGinger/repository:tomooda/HoneyGinger' ]
+				with: [ spec repository: 'github://tomooda/HoneyGinger/repository' ]
 		]
 ]
 
