@@ -67,6 +67,17 @@ WorldState >> menuBuilder [
 ]
 
 { #category : '*Morphic-Base' }
+WorldState class >> newToolsMenuOn: aBuilder [
+	<worldMenu>
+	(aBuilder item: #NewToolsMenu)
+		label: 'New Tools (Preview)';
+		parent: #SystemTools;
+		order: 4;
+		help: 'New tools related.';
+		iconName: #tools
+]
+
+{ #category : '*Morphic-Base' }
 WorldState class >> sourcesWorldMenuOn: aBuilder [
 	<worldMenu>
 	(aBuilder item: #Sources)
@@ -84,25 +95,6 @@ WorldState class >> sourcesWorldMenuOn: aBuilder [
 				withSeparatorAfter.
 			(aBuilder group: #Refactoring)
 				order: 4 ]
-]
-
-{ #category : '*Morphic-Base' }
-WorldState >> startMessageTally [
-
-	self class startMessageTally
-]
-
-{ #category : '*Morphic-Base' }
-WorldState class >> startMessageTally [
-
-	(self confirm: 'MessageTally will start now,
-and stop when the cursor goes
-to the top of the screen' translated)
-		ifFalse: [ ^ self ].
-
-	TimeProfiler spyAllOn: [
-		MorphicRenderLoop new doOneCycleWhile: [
-			self currentWorld activeHand position y > 0 ] ]
 ]
 
 { #category : '*Morphic-Base' }
@@ -124,19 +116,6 @@ WorldState >> startStepping: aMorph at: scheduledTime selector: aSelector argume
 WorldState >> startThenBrowseMessageTally [
 
 	self class startThenBrowseMessageTally
-]
-
-{ #category : '*Morphic-Base' }
-WorldState class >> startThenBrowseMessageTally [
-	"Tally only the UI process"
-
-	(self confirm: 'MessageTally the UI process until the
-mouse pointer goes to the top of the screen')
-		ifFalse: [ ^ self ].
-
-	TimeProfiler onBlock: [
-		MorphicRenderLoop new doOneCycleWhile: [
-			self currentWorld activeHand position y > 10 ] ]
 ]
 
 { #category : '*Morphic-Base' }

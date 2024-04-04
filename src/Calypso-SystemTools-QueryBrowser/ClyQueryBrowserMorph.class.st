@@ -176,7 +176,13 @@ ClyQueryBrowserMorph >> extraScopesOfSelectedItems [
 		self packageScopeOfSelectedItems.
 		classScope asFullHierarchyScope.
 		classScope
-	}, RefactoringSettings availableScopes
+	}, ScopesManager availableScopes
+]
+
+{ #category : 'initialization' }
+ClyQueryBrowserMorph >> initialExtent [
+
+	^ 1350 @ 620 * self currentWorld displayScaleFactor
 ]
 
 { #category : 'initialization' }
@@ -193,17 +199,13 @@ ClyQueryBrowserMorph >> initializeNavigationViews [
 	resultView enableFilter: ClyQueryBrowserFilter.
 	resultView allowsDeselection: false.
 	resultView mainColumn
-		width: 250;
 		displayItemPropertyBy: [:item | self classNameOf: item].
 	(resultView addColumn: #name)
-		width: 200;
 		displayItemPropertyBy: [:item | self mainNameOf: item].
-	(resultView addColumn: #protocol)
-		width: 200;
-		displayItemPropertyBy: [:item | self protocolNameOf: item].
 	(resultView addColumn: #package)
-		width: 50;
-		displayItemPropertyBy: [:item | self packageNameOf: item]
+		displayItemPropertyBy: [:item | self packageNameOf: item].
+	(resultView addColumn: #protocol)
+		displayItemPropertyBy: [:item | self protocolNameOf: item]
 ]
 
 { #category : 'testing' }

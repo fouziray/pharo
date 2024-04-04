@@ -86,7 +86,7 @@ RBRemoveSenderRefactoring >> applicabilityPreconditions [
 RBRemoveSenderRefactoring >> checkSelectedMessage [
 
 	super checkSelectedMessage.
-	sourceMessage isDirectlyUsed ifTrue: [
+	sourceMessage isEssential ifTrue: [
 		self refactoringError: 'The sender is directly used' ]
 ]
 
@@ -131,7 +131,7 @@ RBRemoveSenderRefactoring >> remove: anInterval inMethod: aSelector forClass: aC
 	sourceInterval := anInterval
 ]
 
-{ #category : 'printing' }
+{ #category : 'storing' }
 RBRemoveSenderRefactoring >> storeOn: aStream [
 	aStream nextPut: $(.
 	self class storeOn: aStream.

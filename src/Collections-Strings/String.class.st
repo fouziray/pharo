@@ -632,7 +632,7 @@ String >> asComment [
 { #category : 'converting' }
 String >> asDate [
 	"Many allowed forms, see Date>>#readFrom:"
-
+	self deprecated: 'Use Date>>#readFrom:pattern: specifying a concrete pattern instead.'.
 	^ Date fromString: self
 ]
 
@@ -762,31 +762,6 @@ String >> asTime [
 	"Many allowed forms, see Time>>readFrom:"
 
 	^ Time fromString: self
-]
-
-{ #category : 'converting' }
-String >> asUncommentedCode [
-	"this string represents a commented code, let's uncomment it"
-	
-	"'""abc""' asUncommentedCode >>> 'abc'"
-	
-	^ String streamContents:  [ :str |
-
-		|doubleQuoteAlreadyFound|
-		doubleQuoteAlreadyFound := false.
-
-		self withoutQuoting do: [ :char |
-			char = $"
-				ifTrue: [
-					doubleQuoteAlreadyFound 	ifTrue: [
-							str nextPut: $" ].
-					doubleQuoteAlreadyFound := doubleQuoteAlreadyFound not.
-				]
-				ifFalse: [
-					str nextPut: char
-				]
-		 ]
-	]
 ]
 
 { #category : 'converting' }
@@ -1167,7 +1142,7 @@ String >> deepCopy [
 	^self shallowCopy
 ]
 
-{ #category : 'printing' }
+{ #category : 'displaying' }
 String >> displayStringOn: aStream [
 	"Make sure that this is not printOn: because we do not want to have multiple quotes."
 	aStream nextPutAll: self
@@ -2522,7 +2497,7 @@ String >> stemAndNumericSuffix [
 	^ { stem . suffix }
 ]
 
-{ #category : 'printing' }
+{ #category : 'storing' }
 String >> storeOn: aStream [
 	"Print inside string quotes, doubling inbedded quotes."
 

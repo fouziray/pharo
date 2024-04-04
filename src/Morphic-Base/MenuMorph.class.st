@@ -214,11 +214,17 @@ MenuMorph >> activeSubmenu: aSubmenu [
 
 { #category : 'construction' }
 MenuMorph >> add: aLabelString icon: aForm subMenu: aMenuMorph [
+
+	^ self add: aLabelString iconFormSet: (aForm ifNotNil: [ FormSet form: aForm ]) subMenu: aMenuMorph
+]
+
+{ #category : 'construction' }
+MenuMorph >> add: aLabelString iconFormSet: aFormSet subMenu: aMenuMorph [
 	"Append the given submenu with the given label."
 
 	self addToggle: aLabelString target: nil selector: nil.
 	self lastItem
-		icon: aForm;
+		iconFormSet: aFormSet;
 		subMenu: aMenuMorph.
 	^ self
 ]
@@ -1047,7 +1053,7 @@ MenuMorph >> maxItemsIconWidth [
 
 	^ self menuItems inject: 0 into: [ :maxWidth :menuItemMorph |
 		menuItemMorph hasIcon
-			ifTrue: [ maxWidth max: menuItemMorph iconForm width ]
+			ifTrue: [ maxWidth max: menuItemMorph toggledIconFormSet width ]
 			ifFalse: [ maxWidth ] ]
 ]
 
