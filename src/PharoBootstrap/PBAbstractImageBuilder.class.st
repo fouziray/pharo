@@ -342,9 +342,6 @@ PBAbstractImageBuilder >> createInitialObjects [
 
 			self log: 'Initializing Character Table'.
 			self bootstrapInterpreter evaluateCode: 'Character initialize.'.
-			characterTable := EPInternalCharacterTable new objectSpace: objectSpace.
-			objectSpace backend characterTable: ((self classNamed: #Character) classPool at: #CharacterTable).
-			objectSpace characterTable: characterTable.
 
 			self log: 'Initializing String Ascii and CaseInsensitive Table'.
 			self bootstrapInterpreter evaluateCode: '| asciiOrder caseInsesitiveOrder |
@@ -367,6 +364,7 @@ PBAbstractImageBuilder >> createInitialObjects [
 			self bootstrapInterpreter evaluateCode: 'CompiledMethod initialize.'.
 
 			self log: 'Installing symbol table'.
+			self bootstrapInterpreter evaluateCode: 'SymbolTableSemaphore disable'.
 			self bootstrapInterpreter evaluateCode: 'Symbol initialize.
 	Symbol classPool at: #SymbolTable put: (WeakSet withAll: ByteSymbol allInstances)'.
 			objectSpace symbolTable: (EPInternalSymbolTable new objectSpace: objectSpace).
@@ -681,7 +679,6 @@ PBAbstractImageBuilder >> initializeBootstrapEnvironment [
 	We will later replace them by real ones."
 	objectSpace := EPObjectSpace new.
 	objectSpace backend: espellBackend.
-	objectSpace characterTable: (EPExternalCharacterTable new objectSpace: objectSpace; yourself).
 	objectSpace symbolTable: (EPExternalSymbolTable new objectSpace: objectSpace; yourself).
 	
 	classLoader createJustStubs.
@@ -716,6 +713,10 @@ PBAbstractImageBuilder >> initializeImage [
 
 			process := objectSpace createProcessWithPriority: 40 doing: 'PharoBootstrapInitialization initializeCommandLineHandlerAndErrorHandling'.
 			objectSpace installAsActiveProcess: process.
+			
+			"Enable protection of SymbolTable from concurrent access"
+			self bootstrapInterpreter evaluateCode: 'SymbolTableSemaphore enable'.
+
 
 			self followForwardingPointers.
 

@@ -13,9 +13,9 @@ Class {
 }
 
 { #category : 'preconditions' }
-RBProtectInstanceVariableRefactoring >> applicabilityPreconditions [ 
+RBProtectInstanceVariableRefactoring >> applicabilityPreconditions [
 
-	^RBCondition definesInstanceVariable: variableName in: class
+	^ { (RBCondition definesInstanceVariable: variableName in: class) }
 ]
 
 { #category : 'private - accessing' }
@@ -51,6 +51,6 @@ RBProtectInstanceVariableRefactoring >> inline: aSelector [
 
 { #category : 'transforming' }
 RBProtectInstanceVariableRefactoring >> privateTransform [
-	self setOption: #inlineExpression toUse: [:ref :string | true].
+	self setOption: #shouldNotCreateExtraBindings toUse: [:ref :string | true].
 	self getterSetterMethods do: [:each | self inline: each]
 ]

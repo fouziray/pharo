@@ -10,9 +10,9 @@ Class {
 		'checkBehaviors',
 		'sideEffectBehaviors',
 		'arguments',
-		'metaLink',
 		'properties',
-		'target'
+		'target',
+		'link'
 	],
 	#classVars : [
 		'AllDebugPoints'
@@ -32,11 +32,42 @@ DebugPoint class >> all [
 	^AllDebugPoints ifNil: [ AllDebugPoints := Set new. ]
 ]
 
+{ #category : 'world menu' }
+DebugPoint class >> menuCommandOn: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #'Remove all Debug Points')
+		parent: #Debug;
+		order: -2;
+		help: 'Remove all the debug points of the image.';
+		action: [ self removeAll ].
+
+	(aBuilder item: #'Enable all Debug Points')
+		parent: #Debug;
+		order: -1;
+		help: 'Enable all the debug points of the image.';
+		action: [ self all do: #enable ].
+
+	(aBuilder item: #'Disable all Debug Points')
+		parent: #Debug;
+		order: 0;
+		help: 'Disable all the debug points of the image.';
+		action: [ self all do: #disable ].
+	aBuilder withSeparatorAfter
+]
+
 { #category : 'removing' }
 DebugPoint class >> remove: aDebugPoint [
 
 	self all remove: aDebugPoint ifAbsent: [].
 	
+]
+
+{ #category : 'removing' }
+DebugPoint class >> removeAll [
+
+	<script>
+	self all copy do: #remove
 ]
 
 { #category : 'API' }
@@ -70,6 +101,7 @@ DebugPoint >> arguments [
 
 { #category : 'accessing' }
 DebugPoint >> arguments: aDictionary [
+
 	arguments := aDictionary
 ]
 
@@ -91,36 +123,56 @@ DebugPoint >> checkBehaviors [
 	^ checkBehaviors
 ]
 
+{ #category : 'protocol' }
+DebugPoint >> disable [
+
+	self enabled: false
+]
+
 { #category : 'reflective operations' }
 DebugPoint >> doesNotUnderstand: message [
 	"forward not understood messages to behaviors, 'delegation complements composition' "
-	self behaviors do: [ :bh | 
-		(bh respondsTo: message selector)
-			ifTrue: [ ^bh perform: message selector withEnoughArguments: message arguments ]
-		].
-	
-	^super doesNotUnderstand: message
+
+	self behaviors do: [ :bh |
+		(bh respondsTo: message selector) ifTrue: [
+			^ bh
+				  perform: message selector
+				  withEnoughArguments: message arguments ] ].
+
+	^ super doesNotUnderstand: message
+]
+
+{ #category : 'protocol' }
+DebugPoint >> enable [
+
+	self enabled: true
 ]
 
 { #category : 'accessing' }
 DebugPoint >> enabled [
-	^enabled
+
+	^ enabled
 ]
 
 { #category : 'accessing' }
 DebugPoint >> enabled: aBoolean [
+
 	enabled := aBoolean.
-	DebugPointManager notifyDebugPointChanged: self.
+	DebugPointManager notifyDebugPointChanged: self
 ]
 
 { #category : 'accessing' }
 DebugPoint >> getArgument: aSymbol [
-	^self arguments at: aSymbol
+
+	^ self arguments at: aSymbol
 ]
 
 { #category : 'accessing' }
 DebugPoint >> getBehavior: aBehaviorClass [
-	^self behaviors detect: [ :bh | bh class = aBehaviorClass ] ifNone: [nil]
+
+	^ self behaviors
+		  detect: [ :bh | bh class = aBehaviorClass ]
+		  ifNone: [ nil ]
 ]
 
 { #category : 'announcements' }
@@ -156,7 +208,7 @@ DebugPoint >> initialize [
 { #category : 'installing' }
 DebugPoint >> install [
 
-	self link ifNil: [ ^ self ].
+	self link ifNil: [ ^self ].
 	self link uninstall.
 	self target install: self link
 ]
@@ -176,30 +228,35 @@ DebugPoint >> instanceVariable: aSlot accessStrategy: aSymbol [
 
 { #category : 'accessing' }
 DebugPoint >> link [
-	^metaLink
+
+	^ link ifNil: [ link := self metaLink ]
 ]
 
 { #category : 'accessing' }
 DebugPoint >> link: aMetaLink [
-	metaLink := aMetaLink 
+
+	link := aMetaLink
 ]
 
 { #category : 'default values' }
 DebugPoint >> metaLink [
-	^(MetaLink new
-		metaObject: self;
-		options: #(+ optionCompileOnLinkInstallation);
-		selector: #hitWithContext:;
-		arguments: #(context) ).
+
+	^ MetaLink new
+		  metaObject: self;
+		  options: #( #+ optionCompileOnLinkInstallation );
+		  selector: #hitWithContext:;
+		  arguments: #( context )
 ]
 
 { #category : 'accessing' }
 DebugPoint >> name [
-	^name ifNil: [ #Debugpoint ]
+
+	^ name ifNil: [ #Debugpoint ]
 ]
 
 { #category : 'accessing' }
 DebugPoint >> name: aSymbol [
+
 	name := aSymbol
 ]
 
@@ -218,8 +275,9 @@ DebugPoint >> nodes [
 ]
 
 { #category : 'accessing' }
-DebugPoint >> properties [ 
-	^properties ifNil: [ properties := Dictionary new. ]
+DebugPoint >> properties [
+
+	^ properties ifNil: [ properties := Dictionary new ]
 ]
 
 { #category : 'removing' }

@@ -14,12 +14,6 @@ Class {
 	#tag : 'Widgets'
 }
 
-{ #category : 'class initialization' }
-DialogWindowMorph class >> initialize [
-
-	self deprecatedAliases: { #DialogWindow }
-]
-
 { #category : 'actions' }
 DialogWindowMorph >> acceptTextMorphs [
 	"Accept any text morphs except for those that have no edits."
@@ -30,7 +24,7 @@ DialogWindowMorph >> acceptTextMorphs [
 				p hasUnacceptedEdits]]) ifTrue: [p accept]]
 ]
 
-{ #category : 'top window' }
+{ #category : 'activation' }
 DialogWindowMorph >> activate [
 	"Set the default focus for now, will want to
 	remember it at some point."

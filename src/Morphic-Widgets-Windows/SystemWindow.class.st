@@ -479,7 +479,9 @@ SystemWindow class >> windowMenuOn: aBuilder [
 		action: [ aBuilder model makeSecondTopmost ];
 		withSeparatorAfter.
 	(aBuilder item: #'Create window group')
-		action: [ aBuilder model createWindowGroup ];
+		action: [ aBuilder model createWindowGroup ].
+	(aBuilder item: #'Open as external window')
+		action: [ aBuilder model openAsExternalWindow ];
 		withSeparatorAfter.
 	closableLabel := aBuilder model mustNotClose
 		ifFalse: [ #'Make unclosable' ]
@@ -1479,6 +1481,13 @@ SystemWindow >> offerWindowMenu [
 	aMenu popUpEvent: self currentEvent in: self world
 ]
 
+{ #category : 'menu actions' }
+SystemWindow >> openAsExternalWindow [
+
+	self submorphs last openInExternalWindow.
+	self delete.
+]
+
 { #category : 'open/close' }
 SystemWindow >> openModal [
 	self openInWorld.
@@ -1670,6 +1679,18 @@ SystemWindow >> reframePanesAdjoining: growingPane along: side to: aDisplayBox [
 	"Finally force a recomposition of the whole window"
 	self setPaneRectsFromBounds.
 	self extent: self extent
+]
+
+{ #category : 'dropping/grabbing' }
+SystemWindow >> rejectDropMorphEvent: evt [
+
+	super rejectDropMorphEvent: evt.
+
+	self formerOwner acceptDroppingMorph: self event: evt.
+	self position: self formerPosition.
+	
+	self formerOwner: nil.
+	self formerPosition: nil.
 ]
 
 { #category : 'label' }
