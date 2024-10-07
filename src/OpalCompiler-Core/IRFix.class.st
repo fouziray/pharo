@@ -74,3 +74,8 @@ IRFix >> visitSequence: instructionSequence [
 	retToFix do: [ :each | self convertRet: each forSeq: instructionSequence ].
 	storePopToFix do: [ :each | self convertStorePop: each forSeq: instructionSequence ]
 ]
+
+{ #category : #visiting }
+IRFix >> visitStaticSend: send [
+
+]
