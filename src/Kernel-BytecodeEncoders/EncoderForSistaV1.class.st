@@ -1331,6 +1331,14 @@ EncoderForSistaV1 >> genSendSpecial: specialSelectorIndex numArgs: nArgs [
 	stream nextPut: specialSelectorIndex + 95
 ]
 
+{ #category : #'as yet unclassified' }
+EncoderForSistaV1 >> genSendStatic: methodLiteralOffset [
+
+	stream
+		nextPut: 246;
+		nextPut: methodLiteralOffset
+]
+
 { #category : #'bytecode generation' }
 EncoderForSistaV1 >> genSendSuper: selectorLiteralIndex numArgs: nArgs [
 	| extendedIndex extendedNArgs |
