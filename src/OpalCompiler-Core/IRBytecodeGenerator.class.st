@@ -664,6 +664,15 @@ IRBytecodeGenerator >> send: selector toSuperOf: behavior [
 			encoder genSendSuper: index numArgs: nArgs ]
 ]
 
+{ #category : #'as yet unclassified' }
+IRBytecodeGenerator >> sendStatic: aMethod [
+
+	| nArgs |
+	nArgs := aMethod numArgs.
+	stack pop: nArgs.
+	encoder genSendStatic: (self literalIndexOf: aMethod)
+]
+
 { #category : #results }
 IRBytecodeGenerator >> spurVMHeader: literalsSize [
 	^ (CompiledMethod headerFlagForEncoder: self encoderClass) +

@@ -14,6 +14,14 @@ Class {
 	#category : #'OpalCompiler-Core-IR-Manipulation'
 }
 
+{ #category : #accessing }
+IRTranslator class >> context: aCompilationContext [
+
+	^ self basicNew
+		  initialize;
+		  compilationContext: aCompilationContext
+]
+
 { #category : #'instance creation' }
 IRTranslator class >> context: aCompilationContext trailer: aCompiledMethodTrailer [
 	^self basicNew
@@ -306,6 +314,12 @@ IRTranslator >> visitSequence: instructionSequence [
 IRTranslator >> visitSequences:  irSequences [
 	irSequences withIndexDo: [ :seq :i | seq orderNumber: i].
 	self visitNodes: irSequences
+]
+
+{ #category : #visiting }
+IRTranslator >> visitStaticSend: anIRStaticSend [
+
+	gen sendStatic: anIRStaticSend calledMethod
 ]
 
 { #category : #visiting }

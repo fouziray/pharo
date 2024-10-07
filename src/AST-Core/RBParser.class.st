@@ -346,18 +346,27 @@ RBParser >> parseBinaryMessage [
 	^node
 ]
 
-{ #category : #'private - parsing' }
+{ #category : #parsing }
 RBParser >> parseBinaryMessageWith: aNode [
+
 	| binaryNode |
 	binaryNode := self selectorNodeClass
-		value: currentToken value
-		keywordPositions: (Array with: currentToken start).
+		              value: currentToken value
+		              keywordPositions: { currentToken start }.
 	self step.
-	^self messageNodeClass
-		receiver: aNode
-		selector:  binaryNode
-		keywordsPositions: binaryNode keywordPositions
-		arguments: (Array with: self parseUnaryMessage)
+	^ (binaryNode value beginsWith: '_')
+		  ifTrue: [
+			  self staticMessageNodeClass
+				  receiver: aNode
+				  selector: binaryNode
+				  keywordsPositions: binaryNode keywordPositions
+				  arguments: { self parseUnaryMessage } ]
+		  ifFalse: [
+			  self messageNodeClass
+				  receiver: aNode
+				  selector: binaryNode
+				  keywordsPositions: binaryNode keywordPositions
+				  arguments: { self parseUnaryMessage } ]
 ]
 
 { #category : #'private - parsing' }
@@ -595,30 +604,39 @@ RBParser >> parseKeywordMessage [
 	^self parseKeywordMessageWith: self parseBinaryMessage
 ]
 
-{ #category : #'private - parsing' }
+{ #category : #parsing }
 RBParser >> parseKeywordMessageWith: node [
-	| args isKeyword keywordsStartPositions selector|
+
+	| args isKeyword keywordsStartPositions selector |
 	args := OrderedCollection new: 3.
 	keywordsStartPositions := OrderedCollection new: 3.
 	selector := ''.
 
 	isKeyword := false.
-	[currentToken isKeyword] whileTrue:
-			[keywordsStartPositions add: currentToken start.
-			selector := selector, currentToken value.
-			self step.
-			args add: self parseBinaryMessage.
-			isKeyword := true].
+	[ currentToken isKeyword ] whileTrue: [
+		keywordsStartPositions add: currentToken start.
+		selector := selector , currentToken value.
+		self step.
+		args add: self parseBinaryMessage.
+		isKeyword := true ].
 	selector := self selectorNodeClass value: selector.
 	selector keywordPositions: keywordsStartPositions.
-	^isKeyword
-		ifTrue:
-			[self messageNodeClass
-				receiver: node
-				selector: selector
-				keywordsPositions: keywordsStartPositions
-				arguments: args]
-		ifFalse: [node]
+	^ isKeyword
+		  ifTrue: [
+			  (selector value beginsWith: '_')
+				  ifFalse: [
+					  self messageNodeClass
+						  receiver: node
+						  selector: selector
+						  keywordsPositions: keywordsStartPositions
+						  arguments: args ]
+				  ifTrue: [
+					  self staticMessageNodeClass
+						  receiver: node
+						  selector: selector
+						  keywordsPositions: keywordsStartPositions
+						  arguments: args ] ]
+		  ifFalse: [ node ]
 ]
 
 { #category : #'private - parsing' }
@@ -1174,16 +1192,45 @@ RBParser >> parseUnaryMessage [
 	^node
 ]
 
-{ #category : #'private - parsing' }
+{ #category : #parsing }
 RBParser >> parseUnaryMessageWith: aNode [
-	| selector |
-	selector := self selectorNodeClass value: currentToken value keywordPositions: (Array with: currentToken start).
+
+	| selector classTagDelimiter staticClassToCall |
+	selector := self selectorNodeClass
+		            value: currentToken value
+		            keywordPositions: { currentToken start }.
 	self step.
-	^self messageNodeClass
-		receiver: aNode
-		selector:  selector
-		keywordsPositions: selector keywordPositions
-		arguments: #()
+	^ (selector value beginsWith: '_')
+		  ifFalse: [
+			  self messageNodeClass
+				  receiver: aNode
+				  selector: selector
+				  keywordsPositions: selector keywordPositions
+				  arguments: #(  ) ]
+		  ifTrue: [
+			  classTagDelimiter := selector value allButFirst
+				                       indexOf: $_
+				                       ifAbsent: [ 0 ].
+			  " 1 haltIf: (selector value endsWith: '_')."
+			  classTagDelimiter > 1
+				  ifTrue: [
+					  staticClassToCall := selector value
+						                       copyFrom: 2
+						                       to:
+						                       (selector value allButFirst indexOf: $_).
+					  (self staticMessageNodeClass
+						   receiver: aNode
+						   selector: (selector value: (selector value
+									     copyFrom: (selector value allButFirst indexOf: $_) + 1
+									     to: selector value size))
+						   keywordsPositions: selector keywordPositions
+						   arguments: #(  )) staticClass: staticClassToCall ]
+				  ifFalse: [
+					  self staticMessageNodeClass
+						  receiver: aNode
+						  selector: selector
+						  keywordsPositions: selector keywordPositions
+						  arguments: #(  ) ] ]
 ]
 
 { #category : #'private - parsing' }
@@ -1381,6 +1428,12 @@ RBParser >> selectorNodeClass [
 { #category : #'private - classes' }
 RBParser >> sequenceNodeClass [
 	^ RBSequenceNode
+]
+
+{ #category : #'as yet unclassified' }
+RBParser >> staticMessageNodeClass [
+
+	^ RBStaticMessageNode
 ]
 
 { #category : #private }

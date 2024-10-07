@@ -229,6 +229,13 @@ IRPrinter >> visitSequence: instructionSequence [
 ]
 
 { #category : #visiting }
+IRPrinter >> visitStaticSend: send [
+
+	stream nextPutAll: 'staticSend: '.
+	send calledMethod selector printOn: stream
+]
+
+{ #category : #visiting }
 IRPrinter >> visitStoreInstVar: instVar [
 	stream nextPutAll: 'storeInstVar: '.
    instVar index printOn: stream

@@ -393,6 +393,12 @@ IRBuilder >> send: selector toSuperOf: behavior [
 	^self add: (IRInstruction send: selector toSuperOf: behavior)
 ]
 
+{ #category : #'as yet unclassified' }
+IRBuilder >> sendStatic: aMethod [
+
+	^ self add: (IRSendStatic sendStatic: aMethod)
+]
+
 { #category : #mapping }
 IRBuilder >> sourceByteIndex [
 

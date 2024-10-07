@@ -181,6 +181,16 @@ RBProgramNodeVisitor >> visitSequenceNode: aSequenceNode [
 ]
 
 { #category : #visiting }
+RBProgramNodeVisitor >> visitStaticMessageNode: aStaticMessageNode [
+
+	(aStaticMessageNode isCascaded not or: [
+		 aStaticMessageNode isFirstCascaded ]) ifTrue: [
+		self visitNode: aStaticMessageNode receiver ].
+	self visitNode: aStaticMessageNode selectorNode.
+	aStaticMessageNode arguments do: [ :each | self visitNode: each ]
+]
+
+{ #category : #visiting }
 RBProgramNodeVisitor >> visitSuperNode: aSuperNode [
 	^ self visitVariableNode: aSuperNode
 ]

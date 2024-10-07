@@ -281,6 +281,28 @@ OCASTTranslator >> emitRuntimeError: aNode [
 		send: #signalSyntaxError:
 ]
 
+{ #category : #'as yet unclassified' }
+OCASTTranslator >> emitStaticMessageNode: aStaticMessageNode [
+
+	aStaticMessageNode isCascaded ifFalse: [
+		self visitNode: aStaticMessageNode receiver ].
+	aStaticMessageNode arguments do: [ :each | self visitNode: each ].
+	"aStaticMessageNode isSuperSend
+		ifTrue: [methodBuilder send: aStaticMessageNode selector toSuperOf: aStaticMessageNode superOf ]
+		ifFalse: ["
+	aStaticMessageNode staticClass
+		ifNotNil: [
+			(Smalltalk globals classNamed: aStaticMessageNode staticClass)
+				ifNotNil: [
+					methodBuilder sendStatic:
+						((Smalltalk globals classNamed: aStaticMessageNode staticClass)
+							 compiledMethodAt: aStaticMessageNode selector asSymbol) ] ]
+		ifNil: [
+			methodBuilder sendStatic:
+				(aStaticMessageNode receiver value class compiledMethodAt:
+					 aStaticMessageNode selector asSymbol) ]
+]
+
 { #category : #'inline messages' }
 OCASTTranslator >> emitTimesRepeat: aMessageNode [
 
@@ -720,6 +742,13 @@ OCASTTranslator >> visitReturnNode: aReturnNode [
 OCASTTranslator >> visitSequenceNode: aSequenceNode [
 
 	self shouldBeSentToValueOrEffectTranslator
+]
+
+{ #category : #visiting }
+OCASTTranslator >> visitStaticMessageNode: aMessageNode [
+
+
+	^ self emitStaticMessageNode: aMessageNode
 ]
 
 { #category : #'visitor - double dispatching' }
