@@ -112,7 +112,7 @@ RGMethod >> ast [
 { #category : 'private' }
 RGMethod >> astFromSource [
 
-	^ RBParser parseMethod: self sourceCode
+	^ OCParser parseMethod: self sourceCode
 ]
 
 { #category : 'accessing - backend' }
@@ -228,6 +228,12 @@ RGMethod >> initializeUnresolved [
 	time := self unresolvedValue: self defaultTime
 ]
 
+{ #category : 'testing' }
+RGMethod >> isClassified [
+
+	^ self protocol ~= Protocol unclassified
+]
+
 { #category : 'accessing' }
 RGMethod >> isExtension [
 	"The receiver is an extension when is defined in a different package to the one of its parent"
@@ -313,7 +319,7 @@ RGMethod >> package: anRGPackage [
 { #category : 'accessing' }
 RGMethod >> parseTree [
 	| tree |
-	tree := RBParser
+	tree := OCParser
 		  parseMethod: self sourceCode
 		  onError: [ :str :pos | ^ nil ].
 	tree ifNotNil: [ tree doSemanticAnalysis ].
@@ -345,6 +351,12 @@ RGMethod >> protocol: aSymbol [
 
 	self cleanTagsWithoutAnnouncemnt.
 	self tagWith: aSymbol
+]
+
+{ #category : 'accessing - backend' }
+RGMethod >> protocolName [
+
+	^ self protocol
 ]
 
 { #category : 'private - backend interface' }
@@ -491,7 +503,7 @@ RGMethod >> sourceCodeForNoSelector [
 { #category : 'accessing' }
 RGMethod >> sourceCodeForNoSource [
 
-	^ self selector asMethodPreamble, String cr, String tab, '"source code for the method model not set"'
+	^ self selector asMethodSignature, String cr, String tab, '"source code for the method model not set"'
 ]
 
 { #category : 'accessing - backend' }

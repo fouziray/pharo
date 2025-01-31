@@ -115,7 +115,15 @@ MCMethodDefinition >> accept: aVisitor [
 { #category : 'accessing' }
 MCMethodDefinition >> actualClass [
 
-	^ self class environment at: className ifPresent: [ :class |
+	^ self actualClassIn: self class environment
+]
+
+{ #category : 'accessing' }
+MCMethodDefinition >> actualClassIn: anEnvironment [
+
+	anEnvironment ifNil: [ ^ self actualClass ].
+	
+	^ anEnvironment at: className ifPresent: [ :class |
 		  classIsMeta
 			  ifTrue: [ class classSide ]
 			  ifFalse: [ class ] ]
@@ -163,11 +171,6 @@ MCMethodDefinition >> fullClassName [
 				ifTrue: [self className, ' classSide']]
 ]
 
-{ #category : 'accessing' }
-MCMethodDefinition >> fullTimeStamp [
-	^ DateAndTime fromMethodTimeStamp: timeStamp
-]
-
 { #category : 'comparing' }
 MCMethodDefinition >> hash [
 	| hash |
@@ -187,11 +190,6 @@ MCMethodDefinition >> initializeWithClassName: classString classIsMeta: metaBool
 	timeStamp := timeString.
 	classIsMeta := metaBoolean.
 	source := sourceString withInternalLineEndings
-]
-
-{ #category : 'testing' }
-MCMethodDefinition >> isCodeDefinition [
-	^ true
 ]
 
 { #category : 'installing' }
@@ -235,8 +233,14 @@ MCMethodDefinition >> isOverrideMethod [
 { #category : 'installing' }
 MCMethodDefinition >> load [
 
+	self loadInEnvironment: self class environment
+]
+
+{ #category : 'installing' }
+MCMethodDefinition >> loadInEnvironment: anEnvironment [
+
 	| method |
-	method := self actualClass compiler
+	method := (self actualClassIn: anEnvironment) compiler
 		          protocol: category;
 		          changeStamp: timeStamp;
 		          permitUndeclared: true;
@@ -279,19 +283,6 @@ MCMethodDefinition >> postloadOver: aDefinition [
 		ifTrue: [self actualClass instanceSide compileFields].
 ]
 
-{ #category : 'annotations' }
-MCMethodDefinition >> printAnnotations: requests on: aStream [
-	"Add a string for an annotation pane, trying to fulfill the browser annotationRequests."
-	
-	requests do: [ :aRequest |
-		aRequest == #timeStamp ifTrue: [ aStream nextPutAll: self timeStamp ].
-		aRequest == #messageCategory ifTrue: [ aStream nextPutAll: self protocol ].
-		aRequest == #requirements ifTrue: [
-			self requirements do: [ :req |
-				aStream nextPutAll: req ] separatedBy: [ aStream space ]].
-	] separatedBy: [ aStream space ].
-]
-
 { #category : 'accessing' }
 MCMethodDefinition >> protocol [
 	"Return in which protocol (conceptual groups of methods) the receiver is grouped into."
@@ -323,12 +314,6 @@ MCMethodDefinition >> requirements [
 { #category : 'accessing' }
 MCMethodDefinition >> selector [
 	^selector
-]
-
-{ #category : 'printing' }
-MCMethodDefinition >> shortSummaryPrefix [
-
-	^ self definition selector asString
 ]
 
 { #category : 'comparing' }

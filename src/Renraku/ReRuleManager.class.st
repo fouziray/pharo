@@ -238,7 +238,7 @@ ReRuleManager class >> subSettingsOn: aBuilder with: rules [
 			  selector: #enabled;
 			  target: rule;
 			  default: rule enabled;
-			  label: rule name;
+			  label: rule ruleName;
 			  description: rule rationale ]
 ]
 
@@ -261,7 +261,7 @@ ReRuleManager class >> uniqueInstance [
 	^ self default
 ]
 
-{ #category : 'initialize-release' }
+{ #category : 'class initialization' }
 ReRuleManager class >> unload [
 
 	self reset

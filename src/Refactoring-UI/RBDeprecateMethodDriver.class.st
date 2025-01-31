@@ -12,7 +12,7 @@ You can create my instance and execute the refactoring by running:
 "
 Class {
 	#name : 'RBDeprecateMethodDriver',
-	#superclass : 'RBInteractionDriver',
+	#superclass : 'ReInteractionDriver',
 	#instVars : [
 		'useInsteadSelector',
 		'selectorToDeprecate'
@@ -52,7 +52,7 @@ RBDeprecateMethodDriver >> runRefactoring [
 							"the user pressed cancel"
 							useInsteadSelector ifNil: [ ^ self ].
 							refactoring newSelector: useInsteadSelector.
-							isValid := refactoring applicabilityPreconditions check.
+							isValid := refactoring failedApplicabilityPreconditions isEmpty.
 							isValid ifFalse: [ self selectorToReplaceDeprecatedSelector ].
 							isValid ] whileFalse.
 							

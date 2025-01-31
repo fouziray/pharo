@@ -41,6 +41,17 @@ FLVariableObjectCluster >> addVariableReferenceFrom: anObject to: anotherObject 
 ]
 
 { #category : 'serialize/materialize' }
+FLVariableObjectCluster >> afterMaterializationStepWith: aDecoder [
+
+	aDecoder configuration isMethodChangedWarningDisabled ifTrue: [
+		^ self ].
+
+	objects do: [ :obj |
+		(obj class == CleanBlockClosure and: [ obj compiledBlock isNil ])
+			ifTrue: [ FLMethodChanged signalWithBlock: obj ] ]
+]
+
+{ #category : 'serialize/materialize' }
 FLVariableObjectCluster >> materializeInstanceWith: aDecoder [
 
 	^theClass fuelNew: aDecoder nextEncodedUint32
@@ -88,5 +99,5 @@ FLVariableObjectCluster >> variablePartReferencesOf: anObject do: aBlock [
 
 { #category : 'accessing' }
 FLVariableObjectCluster >> variableReferences [
-	^ variableReferences ifNil: [ variableReferences := FLLargeIdentityDictionary new ]
+	^ variableReferences ifNil: [ variableReferences := IdentityDictionary new ]
 ]

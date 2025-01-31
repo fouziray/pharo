@@ -8,16 +8,17 @@ Class {
 		'refactoringClass',
 		'objectClass'
 	],
-	#category : 'Refactoring-Core-Tests',
-	#package : 'Refactoring-Core-Tests'
+	#category : 'Refactoring-Core-Tests-Model',
+	#package : 'Refactoring-Core-Tests',
+	#tag : 'Model'
 }
 
 { #category : 'running' }
 RBClassTest >> setUp [
 
 	super setUp.
-	rbNamespace := RBNamespace new.
-	abstractTransformationClass := rbNamespace classNamed: #RBAbstractTransformation.
+	rbNamespace := RBNamespace onEnvironment: (RBClassEnvironment classes:  {Behavior. Class. ClassDescription. MOPTestClassD. Model. MyClassB. Object. Object. Object class. ProtoObject class. ReAbstractTransformation. ReAbstractTransformation. RBClassRefactoring. ReRefactoring. Trait2}).
+	abstractTransformationClass := rbNamespace classNamed: #ReAbstractTransformation.
 	objectClass := rbNamespace classNamed: #Object.
 	refactoringClass := rbNamespace classNamed: #RBClassRefactoring.
 	rbNamespace defineClass: [ :aBuilder |
@@ -175,6 +176,49 @@ RBClassTest >> testIsInstanceSide [
 	self assert: abstractTransformationClass classSide isMeta.
 	self deny: abstractTransformationClass classSide instanceSide isMeta.
 	
+]
+
+{ #category : 'tests - navigation' }
+RBClassTest >> testIsManifest [
+
+	| pmNamespace packageManifestClass |
+
+	pmNamespace := RBNamespace new.
+	pmNamespace defineClass: [ :aBuilder |
+		aBuilder
+			name: #PackageManifestForRBClassTest;
+			superclass: PackageManifest ;
+			package: #'Refactory-Testing' ].
+	packageManifestClass := pmNamespace classNamed: #PackageManifestForRBClassTest.
+
+	self assert: packageManifestClass isManifest.
+]
+
+{ #category : 'tests - navigation' }
+RBClassTest >> testIsManifestTransformationClass [
+
+	self 
+		deny: abstractTransformationClass classSide isManifest
+		description: 'It tests that a transformation class is not manifest'.
+	self 
+		deny: abstractTransformationClass isManifest
+		description: 'It tests that a transformation is not manifest'.		
+]
+
+{ #category : 'tests - navigation' }
+RBClassTest >> testIsManifestWhenSuperclassIsUndefined [
+
+	| pmNamespace packageManifestClass |
+
+	pmNamespace := RBNamespace new.
+	pmNamespace defineClass: [ :aBuilder |
+		aBuilder
+			name: #PackageManifestForRBClassTest;
+			superclass: nil ;
+			package: #'Refactory-Testing' ].
+	packageManifestClass := pmNamespace classNamed: #PackageManifestForRBClassTest.
+	
+	self deny: packageManifestClass isManifest.
 ]
 
 { #category : 'tests - navigation' }

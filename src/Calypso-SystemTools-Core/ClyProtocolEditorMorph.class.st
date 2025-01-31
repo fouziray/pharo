@@ -88,7 +88,7 @@ ClyProtocolEditorMorph >> buildResetButton [
 		target: self;
 		actionSelector: #resetProtocolAndPackage;
 		arguments: #();
-		labelFormSet: (self iconFormSetNamed: #glamorousClose);
+		labelFormSet: (self iconFormSetNamed: #close);
 		color: Color transparent;
 		borderWidth: 0;
 		hResizing: #shinkWrap;
@@ -139,7 +139,7 @@ ClyProtocolEditorMorph >> printProtocolOrPackage [
 { #category : 'operations' }
 ClyProtocolEditorMorph >> requestChangeBy: aBlock [
 
-	aBlock on: CmdCommandAborted do: [ :err ].
+	aBlock on: CmdCommandAborted, CmCommandAborted do: [ :err ].
 
 	self update
 ]
@@ -158,8 +158,10 @@ ClyProtocolEditorMorph >> requestProtocol [
 
 	| newProtocol priorProtocol |
 	priorProtocol := ownerTool methodProtocol ifNil: [ '' ].
-
-	newProtocol := self ownerTool context requestProtocol: 'New protocol name' suggesting: priorProtocol.
+	newProtocol := StProtocolNameChooserPresenter requestProtocolNameConfiguring: [ :presenter |
+		               presenter
+			               protocolName: priorProtocol;
+			               concernedClass: ownerTool methodClass ].
 	newProtocol = priorProtocol ifTrue: [ ^ CmdCommandAborted signal ].
 
 	ownerTool methodProtocol: newProtocol

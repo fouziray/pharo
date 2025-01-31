@@ -134,11 +134,6 @@ CompiledMethod >> allIgnoredNotImplementedSelectors [
 		  ifNil: [ #(  ) ]
 ]
 
-{ #category : 'source code management' }
-CompiledMethod >> argumentNames [
-	^ self propertyAt: #argumentNames ifAbsent: [ super argumentNames ]
-]
-
 { #category : 'accessing - pragmas & properties' }
 CompiledMethod >> cachePragmas [
 
@@ -246,6 +241,14 @@ CompiledMethod >> getSourceReplacingSelectorWith: newSelector [
 CompiledMethod >> hasComment [
 	"check if this method has a method comment"
 	^self comment isEmptyOrNil not
+]
+
+{ #category : 'testing' }
+CompiledMethod >> hasEquivalentMethodInSuperclass [
+
+	^ self overriddenMethod
+		  ifNil: [ false ]
+		  ifNotNil: [ :method | self equivalentTo: method ]
 ]
 
 { #category : 'testing' }
@@ -541,6 +544,12 @@ CompiledMethod >> name [
 CompiledMethod >> overriddenMethod [
 
 	^ self methodClass superclass ifNotNil: [ :class | class lookupSelector: self selector ]
+]
+
+{ #category : 'accessing' }
+CompiledMethod >> pathOfLiteralIndexes [
+	
+	^ #[]
 ]
 
 { #category : 'private' }

@@ -10,54 +10,54 @@ For examples browse `ClassHierarchyPrinterTest`
 
 ```
 ClassHierarchyPrinter new 
-		forClass: RBNode; 
+		forClass: ASTNode; 
 		doNotShowState;
 		doNotShowSuperclasses;
-		excludedClasses: (RBNode withAllSubclasses select: [ :each | each name beginsWith: 'RBPattern' ]);
-		limitedToClasses: (RBNode withAllSubclasses select: [:each | each name beginsWith: 'RB']).
+		excludedClasses: (ASTNode withAllSubclasses select: [ :each | each name beginsWith: 'RBPattern' ]);
+		limitedToClasses: (ASTNode withAllSubclasses select: [:each | (each name beginsWith: 'AST') or: [ each name beginsWith: 'RB' ]]]).
 ```
 
 produces 
 
 ```
-'RBNode
-	RBProgramNode
-		RBComment
-		RBMethodNode
-		RBPragmaNode
-		RBReturnNode
-		RBSequenceNode
-		RBValueNode
-			RBArrayNode
-			RBAssignmentNode
-			RBBlockNode
-			RBCascadeNode
-			RBLiteralNode
-				RBLiteralArrayNode
-				RBLiteralValueNode
-			RBMessageNode
-			RBParseErrorNode
-				RBEnglobingErrorNode
-					RBArrayErrorNode
-					RBBlockErrorNode
-					RBInvalidCascadeErrorNode
-					RBLiteralArrayErrorNode
-					RBLiteralByteArrayErrorNode
-					RBMissingOpenerErrorNode
-					RBParenthesesErrorNode
-					RBPragmaErrorNode
-					RBTemporariesErrorNode
-					RBUnfinishedStatementErrorNode
-					RBUnreachableStatementErrorNode
-			RBSelectorNode
-			RBVariableNode
-				RBArgumentNode
-				RBGlobalNode
-				RBInstanceVariableNode
-				RBSelfNode
-				RBSuperNode
-				RBTemporaryNode
-				RBThisContextNode
+'ASTNode
+	ASTProgramNode
+		ASTCommentNode
+		ASTMethodNode
+			ASTDoItMethodNode
+			ASTPatternMethodNode
+		ASTPragmaNode
+			ASTPatternPragmaNode
+		ASTReturnNode
+		ASTSequenceNode
+		ASTValueNode
+			ASTAnnotationMarkNode
+			ASTArrayNode
+			ASTAssignmentNode
+			ASTBlockNode
+				ASTPatternBlockNode
+					ASTPatternWrapperBlockNode
+			ASTCascadeNode
+			ASTLiteralNode
+				ASTLiteralArrayNode
+				ASTLiteralValueNode
+			ASTMessageNode
+				ASTPatternMessageNode
+			ASTParseErrorNode
+				ASTEnglobingErrorNode
+					ASTArrayErrorNode
+					ASTAssignmentErrorNode
+					ASTBlockErrorNode
+					ASTInvalidCascadeErrorNode
+					ASTLiteralArrayErrorNode
+					ASTLiteralByteArrayErrorNode
+					ASTParenthesesErrorNode
+					ASTPragmaErrorNode
+					ASTTemporariesErrorNode
+					ASTUnfinishedStatementErrorNode
+			ASTSelectorNode
+			ASTVariableNode
+				ASTPatternVariableNode
 	RBSlotInitializationNode
 '
 ```	

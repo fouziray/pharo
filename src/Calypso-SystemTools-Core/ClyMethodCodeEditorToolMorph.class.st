@@ -72,7 +72,7 @@ ClyMethodCodeEditorToolMorph >> applyDecorations [
 ClyMethodCodeEditorToolMorph >> attachToSystem [
 
 	browser system when: (ClyMethodChange of: self editingMethod) send: #triggerUpdate to: self.
-	self class codeSupportAnnouncer weak when: ASTCacheReset send: #resetASTCache to: self
+	self class codeSupportAnnouncer weak when: OCASTCacheReset send: #resetASTCache to: self
 ]
 
 { #category : 'testing' }
@@ -287,7 +287,7 @@ ClyMethodCodeEditorToolMorph >> resetASTCache [
 	| cm |
 	cm := ast compiledMethod.
 	cm ifNil: [  ^ self ].
-	ASTCache default at: cm ifAbsentPut: ast
+	OCASTCache default at: cm ifAbsentPut: ast
 ]
 
 { #category : 'selecting text' }
@@ -368,13 +368,6 @@ ClyMethodCodeEditorToolMorph >> switchToMethod: aMethod [
 	self update
 ]
 
-{ #category : 'operations' }
-ClyMethodCodeEditorToolMorph >> toggleExtendingPackage [
-	super toggleExtendingPackage.
-
-	self hasUnacceptedEdits ifFalse: [self packageEditingMethod: editingMethod]
-]
-
 { #category : 'updating' }
 ClyMethodCodeEditorToolMorph >> update [
 
@@ -389,12 +382,6 @@ ClyMethodCodeEditorToolMorph >> update [
 { #category : 'updating' }
 ClyMethodCodeEditorToolMorph >> updateProtocolAndPackage [
 
-	| realMethod |
-	
-	realMethod := editingMethod isRGObject 
-		ifTrue: [ editingMethod realMethod ]
-		ifFalse: [ editingMethod ].
-
-	self methodProtocol: realMethod protocolName.
-	realMethod isExtension ifTrue: [ extendingPackage := realMethod package ]
+	self methodProtocol: editingMethod protocolName.
+	editingMethod isExtension ifTrue: [ extendingPackage := editingMethod package ]
 ]

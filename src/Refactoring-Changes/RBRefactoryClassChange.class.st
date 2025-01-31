@@ -40,7 +40,7 @@ RBRefactoryClassChange >> asUndoOperation [
 RBRefactoryClassChange >> changeClass [
 
 	| class |
-	class := onSystemDictionary
+	class := onSystemEnvironment
 		         at: self changeClassName
 		         ifAbsent: [ ^ nil ].
 	^ isMeta
@@ -105,6 +105,11 @@ RBRefactoryClassChange >> hash [
 	^ self changeClassName hash
 ]
 
+{ #category : 'testing' }
+RBRefactoryClassChange >> isInScope: aRBBrowserEnvironment [ 
+	^ aRBBrowserEnvironment includesClass: self changeClass.
+]
+
 { #category : 'private' }
 RBRefactoryClassChange >> isMeta [
 
@@ -121,7 +126,7 @@ RBRefactoryClassChange >> methodSourceFor: aSymbol [
 { #category : 'accessing' }
 RBRefactoryClassChange >> parserClass [
 
-	^ RBParser
+	^ OCParser
 ]
 
 { #category : 'printing' }

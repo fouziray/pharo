@@ -26,6 +26,22 @@ FLSerializationTest class >> resources [
 	^ { FLFilePoolTestResource }
 ]
 
+{ #category : 'asserting' }
+FLSerializationTest >> assertCleanBlockOuterContextBasedOnCompilationOption: aClosure [
+
+	Smalltalk compiler compilationContext optionCleanBlockClosure
+		ifTrue: [ self assert: aClosure outerContext isNil ]
+		ifFalse: [ self assert: aClosure outerContext isNotNil ]
+]
+
+{ #category : 'asserting' }
+FLSerializationTest >> assertConstantBlockOuterContextBasedOnCompilationOption: aClosure [
+
+	Smalltalk compiler compilationContext optionConstantBlockClosure
+		ifTrue: [ self assert: aClosure outerContext isNil ]
+		ifFalse: [ self assert: aClosure outerContext isNotNil ]
+]
+
 { #category : 'helpers' }
 FLSerializationTest >> assertSerializationEqualityOf: anObject [
 	"Asserts that the original object and the materialized one are equal (but not the same)"

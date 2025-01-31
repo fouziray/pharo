@@ -26,7 +26,6 @@ Class {
 		'name',
 		'interruptedContext',
 		'interruptedProcess',
-		'errorWasInUIProcess',
 		'exception'
 	],
 	#classVars : [
@@ -71,10 +70,10 @@ DebugSession class >> logDebuggerStackToFile: aBoolean [
 
 { #category : 'instance creation' }
 DebugSession class >> named: aString on: aProcess startedAt: aContext [
+
 	^ self new
-		name: aString;
-		process: aProcess context: aContext;
-		detectUIProcess
+		  name: aString;
+		  process: aProcess context: aContext
 ]
 
 { #category : 'debugging actions' }
@@ -106,27 +105,12 @@ DebugSession >> createModelForContext: aContext [
 	^ (self class contextModelClass forContext: aContext)
 ]
 
-{ #category : 'initialization' }
-DebugSession >> detectUIProcess [
-
-	errorWasInUIProcess := MorphicUIManager uiProcess == interruptedProcess
-]
-
-{ #category : 'accessing' }
-DebugSession >> errorWasInUIProcess [
-
-	^ errorWasInUIProcess
-]
-
-{ #category : 'initialization' }
-DebugSession >> errorWasInUIProcess: aBoolean [
-
-	errorWasInUIProcess := aBoolean
-]
-
 { #category : 'accessing' }
 DebugSession >> exception [
-	^ exception
+
+	^ (thisProcess
+		   evaluate: [ LocalProcessException value ]
+		   onBehalfOf: interruptedProcess) ifNil: [ exception ]
 ]
 
 { #category : 'accessing' }
@@ -196,12 +180,6 @@ DebugSession >> interruptedContext [
 DebugSession >> interruptedProcess [
 
 	^ interruptedProcess
-]
-
-{ #category : 'testing' }
-DebugSession >> isAboutUIProcess [
-
-	^errorWasInUIProcess
 ]
 
 { #category : 'testing' }
@@ -373,14 +351,17 @@ DebugSession >> resume: aValue [
 ]
 
 { #category : 'private' }
+DebugSession >> resumeInterruptedProcess [
+
+	interruptedProcess resume
+]
+
+{ #category : 'private' }
 DebugSession >> resumeProcess [
 	"Make sure the interrupted process is restored properly and restart the low space handler"
 
-	interruptedProcess isTerminated
-		ifFalse: [
-			errorWasInUIProcess
-				ifTrue: [ UIManager default resumeUIProcess: interruptedProcess ]
-				ifFalse: [ interruptedProcess resume ]].
+	interruptedProcess isTerminated ifFalse: [
+		^ self resumeInterruptedProcess ].
 
 	"restart low space handler"
 	Smalltalk installLowSpaceWatcher
@@ -449,14 +430,6 @@ DebugSession >> selectedCodeRangeForContext: selectedContext [
 	^ self pcRangeForContext: selectedContext
 ]
 
-{ #category : 'testing' }
-DebugSession >> shouldDisplayContext: aContext basedOnFilters: stackFilters [
-	"Return true if all filters match the given context, or false otherwise.
-	True is returned if there are no filters."
-
-	^stackFilters allSatisfy: [ :aFilter | aFilter shouldDisplay: aContext ]
-]
-
 { #category : 'logging' }
 DebugSession >> signalDebuggerError: anError [
 
@@ -475,54 +448,6 @@ DebugSession >> stack [
 DebugSession >> stackOfSize: size [
 
 	^ interruptedContext stackOfSize: size
-]
-
-{ #category : 'accessing' }
-DebugSession >> stackOfSize: limit usingFilters: stackFilters [
-	"Answer an OrderedCollection of the top 'limit' contexts on the receiver's sender chain, according to the given filters.
-
-	Consider the following stack:
-		a <-- top of the stack
-		b
-		a
-		c
-		a
-		b
-		d
-		e
-		a <-- bottom of the stack
-
-	If the given filters do not match context 'a' and 'b' the following stack will be returned:
-		a <-- top of the stack
-		b
-		a
-		c
-		d
-		e <-- bottom of the stack
-
-	First all consecutive contexts starting from the top of the stack for which a filter does not match are
-	added to the result (a b a in the example). Then from the remaining stack only the context for which all
-	filters match are added to the  result.
-	"
-
-	| stack context |
-	stack := OrderedCollection new.
-	context := interruptedContext.
-
-	"Starting from the top of the stack add all consecutive contexts that should not be displayed."
-	[ context ~~ nil
-	 	and: [(stack size < limit)
-			and: [ (self shouldDisplayContext: context basedOnFilters:  stackFilters) not ] ] ]  whileTrue: [
-				stack addLast: context.
-				context := context sender ].
-
-	"Add all contexts that should be displayed. (the current context is checked again)"
-	[context ~~ nil
-		and: [stack size < limit ] ] whileTrue: [
-			(self shouldDisplayContext: context basedOnFilters: stackFilters)
-				ifTrue: [ stack addLast: context ].
-			context := context sender ].
-	^ stack
 ]
 
 { #category : 'debugging actions' }
@@ -617,17 +542,13 @@ DebugSession >> terminate [
 	"Action that needs to be executed after the window containing this debug session is closed,
 	in order to terminate the right process."
 
-	self interruptedProcess
-		ifNotNil: [
-			"Assume the user closed the debugger. Simply kill the interrupted process."
-			self interruptedProcess terminate.
-			self clear.
-			Smalltalk installLowSpaceWatcher.  "restart low space handler" ]
-		ifNil: [
-			"Assume the interrupted process was resumed."
-			"Kill the active process if the error was in the UI as there should be only one UI process."
-			self isAboutUIProcess
-				ifTrue: [Processor terminateActive] ]
+	self interruptedProcess ifNil: [ ^ self ].
+	
+	"Assume the user closed the debugger. 
+	Simply kill the interrupted process."
+	self interruptedProcess terminate.
+	self clear.
+	Smalltalk installLowSpaceWatcher "restart low space handler"
 ]
 
 { #category : 'evaluating' }

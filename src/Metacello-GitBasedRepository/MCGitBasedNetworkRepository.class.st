@@ -354,13 +354,6 @@ MCGitBasedNetworkRepository >> canUpgradeTo: anMCGitBasedRepository [
 			  self projectVersion = anMCGitBasedRepository projectVersion ] ]
 ]
 
-{ #category : 'accessing' }
-MCGitBasedNetworkRepository >> closestAncestorVersionFor: anAncestry ifNone: errorBlock [
-	^ self localRepository 
-		closestAncestorVersionFor: anAncestry 
-		ifNone: errorBlock
-]
-
 { #category : 'descriptions' }
 MCGitBasedNetworkRepository >> description [
   | desc |
@@ -447,7 +440,7 @@ MCGitBasedNetworkRepository >> goferVersionFrom: aVersionReference [
 	^ self localRepository goferVersionFrom: aVersionReference
 ]
 
-{ #category : 'initialize-release' }
+{ #category : 'initialization' }
 MCGitBasedNetworkRepository >> hasNoLoadConflicts: anMCGitBasedRepository [
   (anMCGitBasedRepository isKindOf: self class)
     ifFalse: [ ^ false ].
@@ -457,19 +450,9 @@ MCGitBasedNetworkRepository >> hasNoLoadConflicts: anMCGitBasedRepository [
         and: [ self projectVersion = anMCGitBasedRepository projectVersion ] ]
 ]
 
-{ #category : 'comparing' }
-MCGitBasedNetworkRepository >> hash [
-    ^ self description hash
-]
-
 { #category : 'testing' }
 MCGitBasedNetworkRepository >> includesVersionNamed: aString [
 	^ self localRepository includesVersionNamed: aString
-]
-
-{ #category : 'testing' }
-MCGitBasedNetworkRepository >> isValid [
-    ^ true
 ]
 
 { #category : 'accessing' }
@@ -676,11 +659,6 @@ MCGitBasedNetworkRepository >> validateLocalRepository [
 		ifTrue: [ ^ self ].
 	self flushCache.
  	self resolveLocalRespository.
-]
-
-{ #category : 'accessing' }
-MCGitBasedNetworkRepository >> versionFrom: aVersionReferenceString [
-	^ self localRepository versionFrom: aVersionReferenceString
 ]
 
 { #category : 'accessing' }

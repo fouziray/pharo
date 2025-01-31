@@ -2,14 +2,16 @@
 Adds a subtree inside a method. It is required an interval indicating where the subtree shall be added. If the interval is invalid, the new subtree will be added at the end of the mehtod body (or before the return node, if it exists).
 
 Usage:
+```
 | transformation |
 transformation := (RBAddSubtreeTransformation
 		interval: (0 to: 1)
 		with: '^ selector'
 		from: #selector:from:
 		in: #RBRemoveMethodTransformation)
-		transform. 
-(ChangesBrowser changes: transformation model changes changes) open
+		generateChanges. 
+(StRefactoringPreviewPresenter for: transformation) open
+```
 
 Preconditions:
 - the class and method exist
@@ -51,7 +53,7 @@ RBAddSubtreeTransformation class >> model: aRBModel interval: anInterval with: a
 ]
 
 { #category : 'utilities' }
-RBAddSubtreeTransformation >> addNode: aRBNode toSequence: aSequenceNode [
+RBAddSubtreeTransformation >> addNode: aNode toSequence: aSequenceNode [
 	"Searches for the statement before which the new code should be added.
 	 If not found, it just adds the new code at the end of the block"
 
@@ -59,8 +61,8 @@ RBAddSubtreeTransformation >> addNode: aRBNode toSequence: aSequenceNode [
 		detect: [ :node | node intersectsInterval: interval ]
 		ifFound: [ :node |
 						node isBlock "special case when a block is empty"
-							ifTrue: [ node body addNode: aRBNode ]
-							ifFalse: [ aSequenceNode addNode: aRBNode before: node ]].
+							ifTrue: [ node body addNode: aNode ]
+							ifFalse: [ aSequenceNode addNode: aNode before: node ]].
 	^ aSequenceNode methodNode
 ]
 

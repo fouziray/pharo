@@ -283,13 +283,8 @@ DebugPoint >> properties [
 { #category : 'removing' }
 DebugPoint >> remove [
 
-	| nodes |
-	nodes := self link nodes copy.
-	self behaviors do: [ :bh | bh remove ].
-	self class remove: self.
-	self link ifNotNil: [ self link uninstall ].
-
-	DebugPointManager notifyDebugPointRemoved: self fromNodes: nodes
+	self removeWithoutUninstall.
+	self link ifNotNil: [ self link uninstall ]
 ]
 
 { #category : 'API' }
@@ -335,15 +330,25 @@ DebugPoint >> removeFromMethod: aMethod [
 ]
 
 { #category : 'removing' }
-DebugPoint >> removeNode: aRBNode [
+DebugPoint >> removeNode: aNode [
 
-	self link removeNode: aRBNode
+	self link removeNode: aNode
 ]
 
 { #category : 'removing' }
 DebugPoint >> removeSideEffectBehavior: aSideEffectBehavior [
 
 	sideEffectBehaviors remove: aSideEffectBehavior
+]
+
+{ #category : 'removing' }
+DebugPoint >> removeWithoutUninstall [
+
+	| nodes |
+	nodes := self link nodes copy.
+	self behaviors do: [ :bh | bh remove ].
+	self class remove: self.
+	DebugPointManager notifyDebugPointRemoved: self fromNodes: nodes
 ]
 
 { #category : 'scope' }

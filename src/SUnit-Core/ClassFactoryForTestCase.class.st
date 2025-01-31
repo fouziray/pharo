@@ -42,10 +42,10 @@ Class {
 }
 
 { #category : 'instance creation' }
-ClassFactoryForTestCase class >> environment: aSystemDictionary [
+ClassFactoryForTestCase class >> environment: aSystemEnvironment [
 
 	^ self new
-		  environment: aSystemDictionary;
+		  environment: aSystemEnvironment;
 		  yourself
 ]
 
@@ -262,7 +262,8 @@ ClassFactoryForTestCase >> silentlyCompile: aString in: aBehavior storingSource:
 
 { #category : 'private' }
 ClassFactoryForTestCase >> silentlyDo: aBlock [
-	^ SystemAnnouncer uniqueInstance suspendAllWhile: aBlock
+
+	^ self class codeChangeAnnouncer suspendAllWhile: aBlock
 ]
 
 { #category : 'creating' }

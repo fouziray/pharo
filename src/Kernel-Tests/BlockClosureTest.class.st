@@ -216,10 +216,12 @@ BlockClosureTest >> testHomeMethod [
 
 { #category : 'tests - testing' }
 BlockClosureTest >> testIsClean [
+
 	| local |
 	local := #testIsClean.
 	self assert: [] isClean. "closes over nothing at all"
 	self assert: [thisContext] isClean. "we can access the context"
+	self assert: [BlockClosure] isClean. "we can access globals"
 	self assert: [
 		| local2 | true ifTrue: [local2 := 1 ] ] isClean. "optimized blocks are clean"
 	self assert: [:a :b| a < b] isClean. "accesses only arguments"
@@ -403,7 +405,7 @@ BlockClosureTest >> testOneArgument [
 
 { #category : 'tests - printing' }
 BlockClosureTest >> testPrintOn [
-	self assert: (RBParser parseExpression: [ 1 + 2 ] printString) equals: (RBParser parseExpression: '[ 1 + 2 ]')
+	self assert: (OCParser parseExpression: [ 1 + 2 ] printString) equals: (OCParser parseExpression: '[ 1 + 2 ]')
 ]
 
 { #category : 'tests - printing' }
@@ -415,7 +417,7 @@ BlockClosureTest >> testPrintOnBlockDefinedInMethodWithoutSourceCode [
 	
 	block := method valueWithReceiver: nil.
 	"we compare the ast to not depend on pretty printer settings"
-	self assert: (RBParser parseExpression: block printString) equals: (RBParser parseExpression: '[ 1 + 2 ]').
+	self assert: (OCParser parseExpression: block printString) equals: (OCParser parseExpression: '[ 1 + 2 ]').
 ]
 
 { #category : 'tests' }
